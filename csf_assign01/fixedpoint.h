@@ -7,8 +7,16 @@ typedef struct {
   // TODO: add fields
   uint64_t whole;
   uint64_t frac;
-  
+  uint8_t tag; 
 } Fixedpoint;
+
+// Tag Bit Flag Reference
+// Most significant bit
+//   0 : is_negative (0 if its non-negative, 1 if negative)
+//   0 : is_error (0 if valid, 1 if error)
+//   0 : is_negative_overflow (0 if positive overflow, 1 if negative overflow)
+//   0 : is_negative_undeflow (0 if positive underlfow, 0 if negative overflow)
+// Least significant bit
 
 // Create a Fixedpoint value representing an integer.
 //
@@ -17,7 +25,7 @@ typedef struct {
 //
 // Returns:
 //   the Fixedpoint value
-Fixedpoint fixedpoint_create(uint64_t whole);
+Fixedpoint fixedpoint_create(uint64_t whole); // both
 
 // Create a Fixedpoint value from specified whole and fractional values.
 //
@@ -29,7 +37,7 @@ Fixedpoint fixedpoint_create(uint64_t whole);
 //
 // Returns:
 //   the Fixedpoint value
-Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac);
+Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac); // both
 
 // Create a Fixedpoint value from a string representation.
 // The string will have one of the following forms:
@@ -46,7 +54,7 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac);
 //   if the string is valid, the Fixedpoint value;
 //   if the string is invalid, a Fixedpoint value for which
 //   fixedpoint_is_err returns true
-Fixedpoint fixedpoint_create_from_hex(const char *hex);
+Fixedpoint fixedpoint_create_from_hex(const char *hex); // liwen
 
 // Get the whole part of the given Fixedpoint value.
 //
@@ -55,7 +63,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex);
 //
 // Returns:
 //   a uint64_t value which is the whole part of the Fixedpoint value
-uint64_t fixedpoint_whole_part(Fixedpoint val);
+uint64_t fixedpoint_whole_part(Fixedpoint val); // both
 
 // Get the fractional part of the given Fixedpoint value.
 //
@@ -64,7 +72,7 @@ uint64_t fixedpoint_whole_part(Fixedpoint val);
 //
 // Returns:
 //   a uint64_t value which is the fractional part of the Fixedpoint value
-uint64_t fixedpoint_frac_part(Fixedpoint val);
+uint64_t fixedpoint_frac_part(Fixedpoint val); // both
 
 // Compute the sum of two valid Fixedpoint values.
 //
@@ -79,7 +87,7 @@ uint64_t fixedpoint_frac_part(Fixedpoint val);
 //   represented, then a value for which either fixedpoint_is_overflow_pos or
 //   fixedpoint_is_overflow_neg returns true is returned (depending on whether
 //   the overflow was positive or negative)
-Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right);
+Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right); // sky
 
 // Compute the difference of two valid Fixedpoint values.
 //
@@ -94,7 +102,7 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right);
 //   represented, then a value for which either fixedpoint_is_overflow_pos or
 //   fixedpoint_is_overflow_neg returns true is returned (depending on whether
 //   the overflow was positive or negative)
-Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right);
+Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right); // sky
 
 // Negate a valid Fixedpoint value.  (I.e. a value with the same magnitude but
 // the opposite sign is returned.)  As a special case, the zero value is considered
@@ -105,7 +113,7 @@ Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right);
 //
 // Returns:
 //   the negation of val
-Fixedpoint fixedpoint_negate(Fixedpoint val);
+Fixedpoint fixedpoint_negate(Fixedpoint val); // sky
 
 // Return a Fixedpoint value that is exactly 1/2 the value of the given one.
 //
@@ -117,7 +125,7 @@ Fixedpoint fixedpoint_negate(Fixedpoint val);
 //   otherwise, a Fixedpoint value for which either fixedpoint_is_underflow_pos
 //   or fixedpoint_is_underflow_neg returns true (depending on whether the
 //   computed value would have been positive or negative)
-Fixedpoint fixedpoint_halve(Fixedpoint val);
+Fixedpoint fixedpoint_halve(Fixedpoint val); // liwen
 
 // Return a Fixedpoint value that is exactly twice the value of the given one.
 //
@@ -129,7 +137,7 @@ Fixedpoint fixedpoint_halve(Fixedpoint val);
 //   otherwise, a Fixedpoint value for which either fixedpoint_is_overflow_pos
 //   or fixedpoint_is_overflow_neg returns true (depending on whether the
 //   computed value would have been positive or negative)
-Fixedpoint fixedpoint_double(Fixedpoint val);
+Fixedpoint fixedpoint_double(Fixedpoint val); // liwen
 
 // Compare two valid Fixedpoint values.
 //
@@ -141,7 +149,7 @@ Fixedpoint fixedpoint_double(Fixedpoint val);
 //    -1 if left < right;
 //     0 if left == right;
 //     1 if left > right
-int fixedpoint_compare(Fixedpoint left, Fixedpoint right);
+int fixedpoint_compare(Fixedpoint left, Fixedpoint right); // liwen
 
 // Determine whether a Fixedpoint value is equal to 0.
 //
@@ -151,7 +159,7 @@ int fixedpoint_compare(Fixedpoint left, Fixedpoint right);
 // Returns:
 //   1 if val is a valid Fixedpoint value equal to 0;
 //   0 is val is not a valid Fixedpoint value equal to 0
-int fixedpoint_is_zero(Fixedpoint val);
+int fixedpoint_is_zero(Fixedpoint val); // both
 
 // Determine whether a Fixedpoint value is an "error" value resulting
 // from a call to fixedpoint_create_from_hex for which the argument
@@ -164,7 +172,7 @@ int fixedpoint_is_zero(Fixedpoint val);
 //   1 if val is the result of a call to fixedpoint_create_from_hex with
 //   an invalid argument string;
 //   0 otherwise
-int fixedpoint_is_err(Fixedpoint val);
+int fixedpoint_is_err(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value is negative (less than 0).
 //
@@ -175,7 +183,7 @@ int fixedpoint_is_err(Fixedpoint val);
 // Returns:
 //   1 if val is a valid value less than 0;
 //   0 otherwise
-int fixedpoint_is_neg(Fixedpoint val);
+int fixedpoint_is_neg(Fixedpoint val); // sky
 
 // Determine whether a Fixedpoint value is the result of negative overflow.
 // Negative overflow results when a sum, difference, or product is negative
@@ -187,7 +195,7 @@ int fixedpoint_is_neg(Fixedpoint val);
 // Returns:
 //   1 if val is the result of an operation where negative overflow occurred;
 //   0 otherwise
-int fixedpoint_is_overflow_neg(Fixedpoint val);
+int fixedpoint_is_overflow_neg(Fixedpoint val); // sky
 
 // Determine whether a Fixedpoint value is the result of positive overflow.
 // Positive overflow results when a sum, difference, or product is positive
@@ -199,7 +207,7 @@ int fixedpoint_is_overflow_neg(Fixedpoint val);
 // Returns:
 //   1 if val is the result of an operation where positive overflow occurred;
 //   0 otherwise
-int fixedpoint_is_overflow_pos(Fixedpoint val);
+int fixedpoint_is_overflow_pos(Fixedpoint val); // sky
 
 // Determine whether a Fixedpoint value is the result of negative underflow.
 // Negative underflow occurs when a division (i.e., fixedpoint_halve)
@@ -212,7 +220,7 @@ int fixedpoint_is_overflow_pos(Fixedpoint val);
 // Returns:
 //   1 if val is the result of an operation where negative underflow occurred;
 //   0 otherwise
-int fixedpoint_is_underflow_neg(Fixedpoint val);
+int fixedpoint_is_underflow_neg(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value is the result of positive underflow.
 // Positive underflow occurs when a division (i.e., fixedpoint_halve)
@@ -225,7 +233,7 @@ int fixedpoint_is_underflow_neg(Fixedpoint val);
 // Returns:
 //   1 if val is the result of an operation where positive underflow occurred;
 //   0 otherwise
-int fixedpoint_is_underflow_pos(Fixedpoint val);
+int fixedpoint_is_underflow_pos(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value represents a valid negative or non-negative number.
 //

@@ -13,6 +13,7 @@ Fixedpoint fixedpoint_create(uint64_t whole) {
   Fixedpoint fp;
   fp.whole = whole;
   fp.frac = 0;
+  fp.tag = 0;
   return fp;
 }
 
@@ -20,6 +21,7 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   Fixedpoint fp;
   fp.whole = whole;
   fp.frac = frac;
+  fp.tag = 0;
   return fp;
 }
 

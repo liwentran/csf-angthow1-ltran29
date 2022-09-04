@@ -12,10 +12,12 @@ typedef struct {
 
 // Tag Bit Flag Reference
 // Most significant bit
-//   0 : is_negative (0 if its non-negative, 1 if negative)
-//   0 : is_error (0 if valid, 1 if error)
-//   0 : is_negative_overflow (0 if positive overflow, 1 if negative overflow)
-//   0 : is_negative_undeflow (0 if positive underlfow, 0 if negative overflow)
+//   0b100000 | is_negative (0 if its non-negative, 1 if negative)
+//   0b010000 | is_error (0 if valid, 1 if error)
+//   0b001000 | is_positive_overflow (1 if positive overflow else 0)
+//   0b000100 | is_negative_overflow (1 if negative overflow else 0)
+//   0b000010 | is_positive_undeflow (1 if positive underflow else 0)
+//   0b000001 | is_negative_undeflow (1 if negative underflow else 0)
 // Least significant bit
 
 // Create a Fixedpoint value representing an integer.
@@ -113,7 +115,7 @@ Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right); // sky
 //
 // Returns:
 //   the negation of val
-Fixedpoint fixedpoint_negate(Fixedpoint val); // sky
+Fixedpoint fixedpoint_negate(Fixedpoint val); // liwen
 
 // Return a Fixedpoint value that is exactly 1/2 the value of the given one.
 //
@@ -183,7 +185,7 @@ int fixedpoint_is_err(Fixedpoint val); // liwen
 // Returns:
 //   1 if val is a valid value less than 0;
 //   0 otherwise
-int fixedpoint_is_neg(Fixedpoint val); // sky
+int fixedpoint_is_neg(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value is the result of negative overflow.
 // Negative overflow results when a sum, difference, or product is negative
@@ -195,7 +197,7 @@ int fixedpoint_is_neg(Fixedpoint val); // sky
 // Returns:
 //   1 if val is the result of an operation where negative overflow occurred;
 //   0 otherwise
-int fixedpoint_is_overflow_neg(Fixedpoint val); // sky
+int fixedpoint_is_overflow_neg(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value is the result of positive overflow.
 // Positive overflow results when a sum, difference, or product is positive
@@ -207,7 +209,7 @@ int fixedpoint_is_overflow_neg(Fixedpoint val); // sky
 // Returns:
 //   1 if val is the result of an operation where positive overflow occurred;
 //   0 otherwise
-int fixedpoint_is_overflow_pos(Fixedpoint val); // sky
+int fixedpoint_is_overflow_pos(Fixedpoint val); // liwen
 
 // Determine whether a Fixedpoint value is the result of negative underflow.
 // Negative underflow occurs when a division (i.e., fixedpoint_halve)
@@ -243,7 +245,7 @@ int fixedpoint_is_underflow_pos(Fixedpoint val); // liwen
 // Returns:
 //   1 if val represents a valid negative or non-negative number;
 //   0 otherwise
-int fixedpoint_is_valid(Fixedpoint val);
+int fixedpoint_is_valid(Fixedpoint val); //liwen
 
 // Return a dynamically allocated C character string with the representation of
 // the given valid Fixedpoint value.  The string should start with "-" if the

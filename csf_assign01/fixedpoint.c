@@ -52,9 +52,8 @@ Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
 }
 
 Fixedpoint fixedpoint_negate(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  val.tag ^= 1 << 5; // tag XOR 100000
+  return val;
 }
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
@@ -80,45 +79,31 @@ int fixedpoint_is_zero(Fixedpoint val) {
 }
 
 int fixedpoint_is_err(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1 << 4) > 0; // tag & 010000
 }
 
 int fixedpoint_is_neg(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1 << 5) > 0; // tag & 100000
 }
 
 int fixedpoint_is_overflow_neg(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1 << 2) > 0; // tag & 000100
 }
 
 int fixedpoint_is_overflow_pos(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1 << 3) > 0; // tag & 001000
 }
 
 int fixedpoint_is_underflow_neg(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1) > 0; // tag & 000001
 }
 
 int fixedpoint_is_underflow_pos(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return (val.tag & 1 << 1) > 0; // tag & 000010
 }
 
 int fixedpoint_is_valid(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  return !(val.tag & 0b11111); // tag & 11111
 }
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {

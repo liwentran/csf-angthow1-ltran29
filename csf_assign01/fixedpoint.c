@@ -50,6 +50,8 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       c = c - '0';
     } else if (c >= 'a' && c <= 'f') {
       c = (c - 'a') + 10;
+    } else if (c >= 'A' && c <= 'F') {
+      c = (c - 'A') + 10;
     } else if (c == '.' && val == &whole) {
       // once we hit the decimal point, find value of frac part
       val = &frac;
@@ -57,6 +59,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     } else {
       // invalid character, so tag as invalid
       hex_tag |= 1 << 4;
+      break;
     }
 
     // shift the existing bits to the left to make space

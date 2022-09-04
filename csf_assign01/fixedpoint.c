@@ -98,21 +98,76 @@ Fixedpoint fixedpoint_negate(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  // represent the whole and half together in one integer
+  __uint128_t value = (val.whole << 64) | val.frac;
+
+  // if the rightmost bit is 1, then that means there's underflow
+  if (value & 1) {
+    // flip the right underflow depending on neg or positive
+    if (fixedpoint_is_neg(val)) {
+      val.tag |= 1;
+    } else {
+      val.tag |= 1 << 1;
+    }
+  }
+
+  // half the value
+  value = value >> 1;
+
+  // split value to whole and frac part
+  uint64_t result_frac = value & 0xffffffffffffffff;
+  uint64_t result_whole = value >> 64;
+  Fixedpoint fp = fixedpoint_create2(result_whole, result_frac);
+  fp.tag = val.tag;
+
+  return fp;
 }
 
 Fixedpoint fixedpoint_double(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+    // represent the whole and half together in one integer
+  __uint128_t value = (val.whole << 64) | val.frac;
+
+  // if the leftmost bit is 1, then that means there's going to be an overflow
+  if (val.whole & (1<<63)) {
+    // flip the right underflow depending on neg or positive
+    if (fixedpoint_is_neg(val)) {
+      val.tag |= 1 << 2;
+    } else {
+      val.tag |= 1 << 3;
+    }
+  }
+
+  // half the value
+  value = value << 1;
+
+  // split value to whole and frac part
+  uint64_t result_frac = value & 0xffffffffffffffff;
+  uint64_t result_whole = value >> 64;
+  Fixedpoint fp = fixedpoint_create2(result_whole, result_frac);
+  fp.tag = val.tag;
+
+  return fp;
 }
 
 int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
-  // TODO: implement
-  assert(0);
-  return 0;
+  // represent the whole and half together in one integer
+  __uint128_t left_val = (left.whole << 64) | left.frac;
+  __uint128_t right_val = (right.whole << 64) | right.frac;
+
+  // If both are positive return 1 when left > right
+  if (!fixedpoint_is_neg(left)  && !fixedpoint_is_neg(right)) {
+    if (left_val > right_val) return 1;
+    else if (left_val < right_val) return -1;
+    else return 0;
+  } else if (fixedpoint_is_neg(left) && fixedpoint_is_neg(right)) {
+    // if both are negative, then opposite result
+    if (left_val > right_val) return -1;
+    else if (left_val < right_val) return 1;
+    else return 0;
+  }
+
+  // if one value is negative, the positive value is greater (return 1 if right is neg)
+  return (fixedpoint_is_neg(right)) ? 1 : -1;
 }
 
 int fixedpoint_is_zero(Fixedpoint val) {

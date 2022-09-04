@@ -25,10 +25,48 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   return fp;
 }
 
+// assuming X and Y are 0-16 digits, we will not check for overflow
+// TODO: test if this works
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  // create negative or positive tag based on first character
+  uint8_t hex_tag;
+  if (*hex == '-') {
+    hex_tag = 1 << 5;
+    hex++;
+  } else {
+    hex_tag = 0;
+  }
+
+  uint64_t whole = 0;
+  uint64_t frac = 0;
+
+  uint64_t *val = &whole;
+
+  while (*hex) {
+    uint8_t c = *hex++;
+
+    // find the decimal representation from the character
+    if (c >= '0' && c <= '9') {
+      c = c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+      c = (c - 'a') + 10;
+    } else if (c == '.' && val == &whole) {
+      // once we hit the decimal point, find value of frac part
+      val = &frac;
+      continue;
+    } else {
+      // invalid character, so tag as invalid
+      hex_tag |= 1 << 4;
+    }
+
+    // shift the existing bits to the left to make space
+    *val = (*val << 4) | (c);
+  }
+
+  // create the fixedpoint and edit tag
+  Fixedpoint fp = fixedpoint_create2(whole,frac);
+  fp.tag = hex_tag;
+  return fp;
 }
 
 uint64_t fixedpoint_whole_part(Fixedpoint val) {

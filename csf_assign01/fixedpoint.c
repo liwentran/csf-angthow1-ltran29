@@ -39,12 +39,13 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
 
   uint64_t whole = 0;
   uint64_t frac = 0;
+  int count = 0;
 
   uint64_t *val = &whole;
 
   while (*hex) {
     uint8_t c = *hex++;
-
+    count += 1;
     // find the decimal representation from the character
     if (c >= '0' && c <= '9') {
       c = c - '0';
@@ -55,6 +56,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     } else if (c == '.' && val == &whole) {
       // once we hit the decimal point, find value of frac part
       val = &frac;
+      count = 0;
       continue;
     } else {
       // invalid character, so tag as invalid
@@ -66,6 +68,11 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     *val = (*val << 4) | (c);
   }
 
+  // if we hex string has frac part, make sure that we fill the rest with zero
+  if (val == &frac && count < 16) {
+    *val = *val << (16 - count)*4;
+  }
+  
   // create the fixedpoint and edit tag
   Fixedpoint fp = fixedpoint_create2(whole,frac);
   fp.tag = hex_tag;
@@ -199,7 +206,7 @@ int fixedpoint_is_underflow_pos(Fixedpoint val) {
 }
 
 int fixedpoint_is_valid(Fixedpoint val) {
-  return !(val.tag & 0b11111); // tag & 11111
+  return !(val.tag & 31); // tag & 11111
 }
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {

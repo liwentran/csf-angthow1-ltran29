@@ -28,13 +28,12 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
 // assuming X and Y are 0-16 digits, we will not check for overflow
 // TODO: test if this works
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
-  // create negative or positive tag based on first character
-  uint8_t hex_tag;
+  // tracks if hex string contains minus sign
+  int has_minus_sign = 0;
+  int is_error = 0;
   if (*hex == '-') {
-    hex_tag = 1 << 5;
+    has_minus_sign = 1;
     hex++;
-  } else {
-    hex_tag = 0;
   }
 
   uint64_t whole = 0;
@@ -46,6 +45,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   while (*hex) {
     uint8_t c = *hex++;
     count += 1;
+
     // find the decimal representation from the character
     if (c >= '0' && c <= '9') {
       c = c - '0';
@@ -60,10 +60,15 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       continue;
     } else {
       // invalid character, so tag as invalid
-      hex_tag |= 1 << 4;
+      is_error = 1;
       break;
     }
 
+    // too many characters
+    if (count > 16) {
+      is_error = 1;
+      break;
+    }
     // shift the existing bits to the left to make space
     *val = (*val << 4) | (c);
   }
@@ -75,7 +80,17 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   
   // create the fixedpoint and edit tag
   Fixedpoint fp = fixedpoint_create2(whole,frac);
-  fp.tag = hex_tag;
+
+  // set is_negative if hex string had negative sign and value is not zero. 
+  if (has_minus_sign && (whole != 0 || frac != 0)) {
+    fp.tag = 1 << 5;
+  }
+
+  // set tag as error
+  if (is_error) {
+    fp.tag |= 1 << 4;
+  }
+  
   return fp;
 }
 
@@ -100,16 +115,16 @@ Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
 }
 
 Fixedpoint fixedpoint_negate(Fixedpoint val) {
-  val.tag ^= 1 << 5; // tag XOR 100000
+  // only negate if value is non zero
+  if (val.whole != 0 || val.frac != 0) {
+    val.tag ^= 1 << 5; // tag XOR 100000
+  }
   return val;
 }
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
-  // represent the whole and half together in one integer
-  __uint128_t value = (val.whole << 64) | val.frac;
-
   // if the rightmost bit is 1, then that means there's underflow
-  if (value & 1) {
+  if (val.frac & 1) {
     // flip the right underflow depending on neg or positive
     if (fixedpoint_is_neg(val)) {
       val.tag |= 1;
@@ -118,12 +133,16 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
     }
   }
 
-  // half the value
-  value = value >> 1;
+  // shift the fractional part
+  uint64_t result_frac = val.frac >> 1;
 
-  // split value to whole and frac part
-  uint64_t result_frac = value & 0xffffffffffffffff;
-  uint64_t result_whole = value >> 64;
+  // move whole's rightmost bit to frac's leftmost bit
+  result_frac = (result_frac & ~(1UL << 63)) | (val.whole & 1);
+
+  //shift the whole part
+  uint64_t result_whole = val.whole >> 1;
+
+  // create the Fixedpoint object
   Fixedpoint fp = fixedpoint_create2(result_whole, result_frac);
   fp.tag = val.tag;
 
@@ -131,11 +150,8 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_double(Fixedpoint val) {
-    // represent the whole and half together in one integer
-  __uint128_t value = (val.whole << 64) | val.frac;
-
   // if the leftmost bit is 1, then that means there's going to be an overflow
-  if (val.whole & (1<<63)) {
+  if (val.whole & (1UL<<63)) {
     // flip the right underflow depending on neg or positive
     if (fixedpoint_is_neg(val)) {
       val.tag |= 1 << 2;
@@ -144,38 +160,56 @@ Fixedpoint fixedpoint_double(Fixedpoint val) {
     }
   }
 
-  // half the value
-  value = value << 1;
+  // shift the whole part
+  uint64_t result_whole = val.whole << 1;
 
-  // split value to whole and frac part
-  uint64_t result_frac = value & 0xffffffffffffffff;
-  uint64_t result_whole = value >> 64;
+  // move frac's leftmost bit to whole's rightmost bit
+  result_whole = (result_whole & ~(1)) | ((val.frac >> 63) & 1);
+
+  //shift the frac part
+  uint64_t result_frac = val.frac << 1;
+
+  // create the Fixedpoint object
   Fixedpoint fp = fixedpoint_create2(result_whole, result_frac);
   fp.tag = val.tag;
 
   return fp;
 }
 
+
 int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
-  // represent the whole and half together in one integer
-  __uint128_t left_val = (left.whole << 64) | left.frac;
-  __uint128_t right_val = (right.whole << 64) | right.frac;
+  int result = 0;
+
+  if (left.whole == right.whole) {
+    if (left.frac == right.frac) return 0;
+    else if (left.frac > right.frac) result = 1;
+    else result = -1;
+  } else {
+    if (left.whole == right.whole) return 0;
+    else if (left.whole > right.whole) result = 1;
+    else result = -1;
+  }
+
+  // // abs(result) must be  <= 1
+  // if (result != 0) {
+  //   result /= abs(result);
+  // }
 
   // If both are positive return 1 when left > right
   if (!fixedpoint_is_neg(left)  && !fixedpoint_is_neg(right)) {
-    if (left_val > right_val) return 1;
-    else if (left_val < right_val) return -1;
-    else return 0;
+    return result;
+  
+  // If both are negative return 1 when abs(left) < abs(right)
   } else if (fixedpoint_is_neg(left) && fixedpoint_is_neg(right)) {
-    // if both are negative, then opposite result
-    if (left_val > right_val) return -1;
-    else if (left_val < right_val) return 1;
-    else return 0;
+    return result * -1;
+    
+  } else {
+    // if one value is negative, the positive value is greater (return 1 if right is neg)
+    return (fixedpoint_is_neg(right)) ? 1 : -1;
   }
 
-  // if one value is negative, the positive value is greater (return 1 if right is neg)
-  return (fixedpoint_is_neg(right)) ? 1 : -1;
 }
+
 
 int fixedpoint_is_zero(Fixedpoint val) {
   return !val.frac && !val.whole;

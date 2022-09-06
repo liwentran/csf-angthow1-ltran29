@@ -31,6 +31,15 @@ void test_sub(TestObjs *objs);
 void test_is_overflow_pos(TestObjs *objs);
 void test_is_err(TestObjs *objs);
 // TODO: add more test functions
+void my_test_create_from_hex(TestObjs *objs);
+void my_test_is_err(TestObjs *objs);
+void my_test_halve(TestObjs *objs);
+void my_test_double(TestObjs *objs);
+void my_test_compare(TestObjs *objs);
+void my_test_is_zero(TestObjs *objs);
+void my_test_is_overflow_neg(TestObjs *objs);
+void my_test_is_underflow_pos(TestObjs *objs);
+void my_test_is_underflow_neg(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -44,13 +53,22 @@ int main(int argc, char **argv) {
   TEST(test_whole_part);
   TEST(test_frac_part);
   TEST(test_create_from_hex);
-  TEST(test_format_as_hex);
+  // TEST(test_format_as_hex);
   TEST(test_negate);
-  TEST(test_add);
-  TEST(test_sub);
-  TEST(test_is_overflow_pos);
+  // TEST(test_add);
+  // TEST(test_sub);
+  // TEST(test_is_overflow_pos);
   TEST(test_is_err);
 
+  TEST(my_test_create_from_hex);
+  TEST(my_test_is_err);
+  TEST(my_test_halve);
+  TEST(my_test_double);
+  TEST(my_test_compare);
+  TEST(my_test_is_zero);
+  TEST(my_test_is_overflow_neg);
+  TEST(my_test_is_underflow_pos);
+  TEST(my_test_is_underflow_neg);
   // IMPORTANT: if you add additional test functions (which you should!),
   // make sure they are included here.  E.g., if you add a test function
   // "my_awesome_tests", you should add
@@ -109,6 +127,7 @@ void test_create_from_hex(TestObjs *objs) {
 
   ASSERT(0x00f2000000000000UL == fixedpoint_frac_part(val1));
 }
+
 
 void test_format_as_hex(TestObjs *objs) {
   char *s;
@@ -255,3 +274,189 @@ void test_is_err(TestObjs *objs) {
 }
 
 // TODO: implement more test functions
+
+// My own test to test that create from hex works properly
+void my_test_create_from_hex(TestObjs *objs) {
+  (void) objs;
+
+  // make sure that uppercase letters work
+  Fixedpoint val1 = fixedpoint_create_from_hex("934.ADE8d38A");
+  ASSERT(fixedpoint_is_valid(val1));
+  ASSERT(0x934UL == fixedpoint_whole_part(val1));
+  ASSERT(0xade8d38a00000000UL == fixedpoint_frac_part(val1));
+
+  // Test to make sure that 0 in frac works
+  Fixedpoint val2 = fixedpoint_create_from_hex("934.0");
+  ASSERT(fixedpoint_is_valid(val2));
+  ASSERT(0x934UL == fixedpoint_whole_part(val2));
+  ASSERT(0 == fixedpoint_frac_part(val2));
+
+  // Test to make sure that 0 in whole works 
+  Fixedpoint val3 = fixedpoint_create_from_hex("0.a");
+  ASSERT(fixedpoint_is_valid(val3));
+  ASSERT(0 == fixedpoint_whole_part(val3));
+  ASSERT(0xa000000000000000UL == fixedpoint_frac_part(val3));
+
+  // Test to make sure that 0 in both whole and frac works 
+  Fixedpoint val4 = fixedpoint_create_from_hex("0.0");
+  ASSERT(fixedpoint_is_valid(val4));
+  ASSERT(0 == fixedpoint_whole_part(val4));
+  ASSERT(0 == fixedpoint_frac_part(val4));
+
+  // Test to make sure that ending in a decimal still produces valid fp
+  Fixedpoint val5 = fixedpoint_create_from_hex("ab2.");
+  ASSERT(fixedpoint_is_valid(val5));
+
+  // Test to make sure that a single decimal point produces valid fp 0.0
+  Fixedpoint val6 = fixedpoint_create_from_hex(".");
+  ASSERT(fixedpoint_is_valid(val6));
+  ASSERT(0 == fixedpoint_whole_part(val6));
+  ASSERT(0 == fixedpoint_frac_part(val6));
+}
+
+
+void my_test_is_err(TestObjs *objs) {
+  (void) objs;
+
+  // two decimal points
+  Fixedpoint err1 = fixedpoint_create_from_hex("7..4");
+  ASSERT(fixedpoint_is_err(err1));
+}
+
+// My own test to test halving
+void my_test_halve(TestObjs *objs) {
+  //// simple case
+  Fixedpoint fp1 = fixedpoint_create_from_hex("-a.3200000000000000");
+  Fixedpoint halved = fixedpoint_halve(fp1);
+
+  // Still is negative and valid
+  ASSERT(fixedpoint_is_neg(halved));
+  ASSERT(fixedpoint_is_valid(halved));
+
+  // value is halved
+  ASSERT(0x5UL == fixedpoint_whole_part(halved));
+  ASSERT(0x1900000000000000UL == fixedpoint_frac_part(halved));
+
+  //// half of one_half should be one_fourth
+  halved = fixedpoint_halve(objs->one_half);
+
+  // Still is positive and valid
+  ASSERT(!fixedpoint_is_neg(halved));
+  ASSERT(fixedpoint_is_valid(halved));
+
+  // value is halved
+  ASSERT(fixedpoint_whole_part(objs->one_fourth) == fixedpoint_whole_part(halved));
+  ASSERT(fixedpoint_frac_part(objs->one_fourth) == fixedpoint_frac_part(halved));
+}
+
+// My own test to test double
+void my_test_double(TestObjs *objs) {
+  Fixedpoint doubled, fp;
+  
+  fp = fixedpoint_create_from_hex("-3c.19");
+  doubled = fixedpoint_double(fp);
+
+  // Still is negative and valid
+  ASSERT(fixedpoint_is_neg(doubled));
+  ASSERT(fixedpoint_is_valid(doubled));
+
+  // value is doubled
+  ASSERT(0x78UL == fixedpoint_whole_part(doubled));
+  ASSERT(0x3200000000000000UL == fixedpoint_frac_part(doubled));
+
+  // doubling 1/2 should get 1
+  doubled = fixedpoint_double(objs->one_half);
+
+
+  // Still is positive and valid
+  ASSERT(!fixedpoint_is_neg(doubled));
+  ASSERT(fixedpoint_is_valid(doubled));
+
+  // value is doubled
+  ASSERT(1 == fixedpoint_whole_part(doubled));
+  ASSERT(0 == fixedpoint_frac_part(doubled));
+}
+
+// My own test to test compare
+void my_test_compare(TestObjs *objs) {
+  // comparing differing whole parts
+  ASSERT(fixedpoint_compare(objs->one_half, objs->one) == -1);
+  ASSERT(fixedpoint_compare(objs->one, objs->one_half) == 1);
+
+  // comparing same whole parts
+  ASSERT(fixedpoint_compare(objs->one_fourth, objs->one_half) == -1);
+  ASSERT(fixedpoint_compare(objs->one_half, objs->one_fourth) == 1);
+
+  // comparing same
+  ASSERT(fixedpoint_compare(objs->one_half, objs->one_half) == 0);
+}
+
+// My own test to test zero
+void my_test_is_zero(TestObjs *objs) {
+  ASSERT(fixedpoint_is_zero(objs->zero));
+
+
+  Fixedpoint sum, doubled, halved;
+
+  // adding zero to zero
+  sum = fixedpoint_add(objs->zero, objs->zero);
+  ASSERT(fixedpoint_is_zero(sum));
+
+  // doubling zero
+  doubled = fixedpoint_double(objs->zero);
+  ASSERT(fixedpoint_is_zero(doubled));
+
+  // having zero
+  halved = fixedpoint_halve(objs->zero);
+  ASSERT(fixedpoint_is_zero(halved));
+}
+
+
+// My own test to test overflow neg
+void my_test_is_overflow_neg(TestObjs *objs) {
+
+  Fixedpoint sum, doubled;
+  Fixedpoint negative_one = fixedpoint_negate(objs->one);
+  Fixedpoint min = fixedpoint_negate(objs->max);
+
+  // doubling max
+  doubled = fixedpoint_double(min);
+  ASSERT(fixedpoint_is_overflow_neg(doubled));
+
+  // adding -1 to min
+  sum = fixedpoint_add(min, negative_one);
+  ASSERT(fixedpoint_is_overflow_neg(sum));
+
+  // adding min to -1
+  sum = fixedpoint_add(negative_one, min);
+  ASSERT(fixedpoint_is_overflow_neg(sum));
+
+  // subtracting 1 from min
+  sum = fixedpoint_sub(min, objs->one);
+  ASSERT(fixedpoint_is_overflow_neg(sum));
+}
+
+// My own test to test underflow pos
+void my_test_is_underflow_pos(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint fp1 = fixedpoint_create_from_hex("c7252a193ae07.7a51de9ea0538c51");
+  Fixedpoint halved = fixedpoint_halve(fp1);
+
+  // should be positive and underflow neg
+  ASSERT(!fixedpoint_is_neg(halved));
+  ASSERT(fixedpoint_is_underflow_pos(halved));
+
+}
+
+// My own test to test underflow neg
+void my_test_is_underflow_neg(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint fp1 = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c51");
+  Fixedpoint halved = fixedpoint_halve(fp1);
+
+  // should be negative and underflow neg
+  ASSERT(fixedpoint_is_neg(halved));
+  ASSERT(fixedpoint_is_underflow_neg(halved));
+}

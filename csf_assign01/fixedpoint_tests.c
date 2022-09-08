@@ -55,8 +55,11 @@ int main(int argc, char **argv) {
   TEST(test_create_from_hex);
   // TEST(test_format_as_hex);
   TEST(test_negate);
-  // TEST(test_add);
-  // TEST(test_sub);
+  TEST(test_add);
+  //TEST(test_negative_sub_negative);
+  //TEST(test_add_two_positives);
+  TEST(test_sub);
+  TEST(test_wrap);
   // TEST(test_is_overflow_pos);
   TEST(test_is_err);
 
@@ -210,6 +213,77 @@ void test_add(TestObjs *objs) {
   ASSERT(fixedpoint_is_neg(sum));
   ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
   ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
+}
+
+/**
+void test_add_two_positives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+  lhs = fixedpoint_create_from_hex("1AE.16"); //430.22
+  rhs = fixedpoint_create_from_hex("1F5.7"); //501.7
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(lhs.whole = 430);
+  ASSERT(rhs.whole = 501);
+  ASSERT(!fixedpoint_is_neg(sum));
+  //printf("frac: %d", fixedpoint_frac_part(sum));
+  ASSERT(931UL == fixedpoint_whole_part(sum));
+  ASSERT(92UL == fixedpoint_frac_part(sum));
+}*/
+
+void test_wrap(){
+uint64_t left = (uint64_t)1 << 62;
+uint64_t right = (uint64_t)3 << 62;
+uint64_t dif = left - right;
+ASSERT(dif == (uint64_t)1 << 63);
+
+uint64_t left2 = (uint64_t)1 << 63;
+uint64_t right2 = (uint64_t)3 << 62;
+uint64_t dif2 = left2 - right2;
+ASSERT(dif2 == (uint64_t)3 << 62);
+}
+
+/**
+void test_add_positives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
+  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
+}
+*/
+
+/**
+void test_add_negatives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
+  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
+}
+*/
+
+void test_negative_sub_negative(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, diff;
+
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("-d09079.1e6d601");
+  diff = fixedpoint_sub(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(diff));
+  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(diff));
+  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(diff));
 }
 
 void test_sub(TestObjs *objs) {

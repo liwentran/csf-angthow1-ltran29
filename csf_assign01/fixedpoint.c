@@ -103,15 +103,70 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+
+  Fixedpoint sum = fixedpoint_create(0);
+
+  //positive + negative (subtract) cannot have overflow because subtracting. Underflow?
+  if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) {
+    //check which is bigger
+    if(left.whole > right.whole){
+      sum.whole = left.whole - right.whole;
+      sum.frac = left.frac - right.frac;
+      if(right.frac > left.frac){
+        sum.whole -= 1;
+      }
+      sum.tag = left.tag;
+    }
+    else if(right.whole > left.whole){
+      sum.whole = right.whole - left.whole;
+      sum.frac = right.frac - left.frac;
+      if(left.frac > right.frac){
+        sum.whole -= 1;
+      }
+      sum.tag = right.tag;
+    }
+    else{
+      sum.whole = 0;
+      if(left.frac > right.frac){
+        sum.frac = left.frac - right.frac;
+        sum.tag = left.tag;
+      }
+      else if(left.frac > right.frac){
+        sum.frac = right.frac - left.frac;
+        sum.tag = right.tag;
+      } 
+      else{
+        sum.tag = 0; //valid
+        sum.frac = 0;
+      }
+    }
+  }
+
+  //if both positive or both negative
+  else{
+    sum.frac = left.frac + right.frac;
+    //check for carry
+    if(sum.frac < left.frac || sum.frac < right.frac){
+      sum.whole = 1;
+    }
+    sum.tag = left.tag;
+    sum.whole += left.whole + right.whole;
+
+    //check overflow
+    if(sum.whole < left.whole || sum.whole < right.whole){
+      if(fixedpoint_is_neg(sum)){
+        sum.tag |= 1 << 2; //overflow negative
+      }
+      else{
+        sum.tag |= 1 << 3; //overflow positive
+      }
+    }
+  }
+  return sum;
 }
 
 Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  return fixedpoint_add(left, fixedpoint_negate(right));
 }
 
 Fixedpoint fixedpoint_negate(Fixedpoint val) {
@@ -152,7 +207,7 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
 Fixedpoint fixedpoint_double(Fixedpoint val) {
   // if the leftmost bit is 1, then that means there's going to be an overflow
   if (val.whole & (1UL<<63)) {
-    // flip the right underflow depending on neg or positive
+    // flip the right overflow depending on neg or positive
     if (fixedpoint_is_neg(val)) {
       val.tag |= 1 << 2;
     } else {

@@ -319,9 +319,6 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
   }
 
   
-  if(fixedpoint_is_neg(val)){
-    s[idx++] = '-';
-  }
 
   //convert fractional part
   int count = 0;
@@ -365,6 +362,12 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     val.whole = val.whole >> 4;
   }
 
+
+  // add - if neg
+  if(fixedpoint_is_neg(val)){
+    s[idx++] = '-';
+  }
+  
   // end string
   s[idx] = '\0';
 

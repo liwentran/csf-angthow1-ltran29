@@ -151,6 +151,11 @@ void test_format_as_hex(TestObjs *objs) {
   ASSERT(0 == strcmp(s, "0.8"));
   free(s);
 
+
+  s = fixedpoint_format_as_hex(fixedpoint_negate(objs->one_half));
+  ASSERT(0 == strcmp(s, "-0.8"));
+  free(s);
+
   s = fixedpoint_format_as_hex(objs->one_fourth);
   // printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "0.4"));

@@ -53,13 +53,12 @@ int main(int argc, char **argv) {
   TEST(test_whole_part);
   TEST(test_frac_part);
   TEST(test_create_from_hex);
-  // TEST(test_format_as_hex);
+  TEST(test_format_as_hex);
   TEST(test_negate);
   TEST(test_add);
   //TEST(test_negative_sub_negative);
   //TEST(test_add_two_positives);
   TEST(test_sub);
-  TEST(test_wrap);
   // TEST(test_is_overflow_pos);
   TEST(test_is_err);
 
@@ -135,6 +134,7 @@ void test_create_from_hex(TestObjs *objs) {
 void test_format_as_hex(TestObjs *objs) {
   char *s;
 
+/**
   s = fixedpoint_format_as_hex(objs->zero);
   ASSERT(0 == strcmp(s, "0"));
   free(s);
@@ -142,16 +142,28 @@ void test_format_as_hex(TestObjs *objs) {
   s = fixedpoint_format_as_hex(objs->one);
   ASSERT(0 == strcmp(s, "1"));
   free(s);
+  */
+
+ /**
+  Fixedpoint fp = fixedpoint_create(400);
+   s = fixedpoint_format_as_hex(fp);
+  ASSERT(0 == strcmp(s, "190"));
+  free(s);
 
   s = fixedpoint_format_as_hex(objs->one_half);
   ASSERT(0 == strcmp(s, "0.8"));
   free(s);
+  */
 
+ /**
   s = fixedpoint_format_as_hex(objs->one_fourth);
+  printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "0.4"));
   free(s);
+  */
 
   s = fixedpoint_format_as_hex(objs->large1);
+  printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "4b19efcea.000000ec9a1e2418"));
   free(s);
 
@@ -230,18 +242,6 @@ void test_add_two_positives(TestObjs *objs) {
   ASSERT(931UL == fixedpoint_whole_part(sum));
   ASSERT(92UL == fixedpoint_frac_part(sum));
 }*/
-
-void test_wrap(){
-uint64_t left = (uint64_t)1 << 62;
-uint64_t right = (uint64_t)3 << 62;
-uint64_t dif = left - right;
-ASSERT(dif == (uint64_t)1 << 63);
-
-uint64_t left2 = (uint64_t)1 << 63;
-uint64_t right2 = (uint64_t)3 << 62;
-uint64_t dif2 = left2 - right2;
-ASSERT(dif2 == (uint64_t)3 << 62);
-}
 
 /**
 void test_add_positives(TestObjs *objs) {

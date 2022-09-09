@@ -5,10 +5,6 @@
 #include <assert.h>
 #include "fixedpoint.h"
 
-// You can remove this once all of the functions are fully implemented
-static Fixedpoint DUMMY;
-//struct Fixedpoint fp;
-
 Fixedpoint fixedpoint_create(uint64_t whole) {
   Fixedpoint fp;
   fp.whole = whole;
@@ -298,10 +294,64 @@ int fixedpoint_is_valid(Fixedpoint val) {
   return !(val.tag & 31); // tag & 11111
 }
 
+// Return a dynamically allocated C character string with the representation of
+// the given valid Fixedpoint value.  The string should start with "-" if the
+// value is negative, and should use the characters 0-9 and a-f to represent
+// each hex digit of the whole and fractional parts. As a special case, if the
+// Fixedpoint value represents an integer (i.e., the fractional part is 0),
+// then no "decimal point" ('.') should be included.
+//
+// Parameters:
+//   val - the Fixedpoint value
+//
+// Returns:
+//   dynamically allocated character string containing the representation
+//   of the Fixedpoint value
 char *fixedpoint_format_as_hex(Fixedpoint val) {
-  // TODO: implement
-  assert(0);
   char *s = malloc(20);
-  strcpy(s, "<invalid>");
+  int idx = 0;
+  if(fixedpoint_is_neg(val)){
+    s[idx++] = '-';
+  }
+  //convert fraction
+  if(val.frac != 0){
+    uint64_t hex = val.frac;
+    while(val.frac != 0){
+      printf("frac: %li", val.frac);
+      hex = val.frac % 16;
+      if(hex < 10){
+        s[idx++] = 48 + hex;
+      }
+      else{
+        s[idx++] = 87 + hex;
+
+      }
+      val.frac /= 16;
+    }
+    s[idx++] = '.';
+  }
+  //convert whole
+  if(val.whole == 0){
+    s[idx] = '0';
+  }
+  while(val.whole != 0){
+    uint64_t hex = val.whole % 16;
+    if(hex < 10){
+      s[idx] = 48 + hex;
+      idx++;
+    }
+    else{
+      s[idx] = 87 + hex;
+      idx++;
+    }
+    val.whole /= 16;
+  }
+
+  for(size_t i = 0; i < strlen(s) / 2; i++){
+    char temp = s[i];
+    s[i] = s[strlen(s) - 1 - i];
+    s[strlen(s) - 1 - i] = temp;
+  }  //strcpy(s, "<invalid>");
+  //printf("string:%s Length: %d\n", s, (int)strlen(s));
   return s;
 }

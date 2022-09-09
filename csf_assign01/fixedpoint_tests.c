@@ -134,7 +134,6 @@ void test_create_from_hex(TestObjs *objs) {
 void test_format_as_hex(TestObjs *objs) {
   char *s;
 
-/**
   s = fixedpoint_format_as_hex(objs->zero);
   ASSERT(0 == strcmp(s, "0"));
   free(s);
@@ -142,9 +141,7 @@ void test_format_as_hex(TestObjs *objs) {
   s = fixedpoint_format_as_hex(objs->one);
   ASSERT(0 == strcmp(s, "1"));
   free(s);
-  */
 
- /**
   Fixedpoint fp = fixedpoint_create(400);
    s = fixedpoint_format_as_hex(fp);
   ASSERT(0 == strcmp(s, "190"));
@@ -153,21 +150,19 @@ void test_format_as_hex(TestObjs *objs) {
   s = fixedpoint_format_as_hex(objs->one_half);
   ASSERT(0 == strcmp(s, "0.8"));
   free(s);
-  */
 
- /**
   s = fixedpoint_format_as_hex(objs->one_fourth);
-  printf("string: %s\n", s);
+  // printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "0.4"));
   free(s);
-  */
 
   s = fixedpoint_format_as_hex(objs->large1);
-  printf("string: %s\n", s);
+  // printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "4b19efcea.000000ec9a1e2418"));
   free(s);
 
   s = fixedpoint_format_as_hex(objs->large2);
+  // printf("string: %s\n", s);
   ASSERT(0 == strcmp(s, "fcbf3d5.00004d1a23c24faf"));
   free(s);
 }

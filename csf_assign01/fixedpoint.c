@@ -308,50 +308,76 @@ int fixedpoint_is_valid(Fixedpoint val) {
 //   dynamically allocated character string containing the representation
 //   of the Fixedpoint value
 char *fixedpoint_format_as_hex(Fixedpoint val) {
-  char *s = malloc(20);
-  int idx = 0;
+  char *s = malloc(34); // 16 whole, 16 frac values, 1 negative sign, 1 decimal point 
+  int idx = 0; // index of array
+  uint64_t hex;
+
+  // if string is invalid, return invalid. 
+  if (!fixedpoint_is_valid(val)) {
+    strcpy(s, "<invalid>");
+    return s;
+  }
+
+  
   if(fixedpoint_is_neg(val)){
     s[idx++] = '-';
   }
-  //convert fraction
-  if(val.frac != 0){
-    uint64_t hex = val.frac;
-    while(val.frac != 0){
-      printf("frac: %li", val.frac);
-      hex = val.frac % 16;
-      if(hex < 10){
-        s[idx++] = 48 + hex;
-      }
-      else{
-        s[idx++] = 87 + hex;
 
+  //convert fractional part
+  int count = 0;
+  int start = 0;
+  if(val.frac != 0){
+    while(val.frac != 0){
+      hex = val.frac & 15; // 0b1111
+      if (hex != 0) {
+        start = 1;
       }
-      val.frac /= 16;
+      if (start){
+        if(hex < 10){
+          s[idx++] = 48 + hex;
+        }
+        else{
+          s[idx++] = 87 + hex;
+        }
+      }
+      
+      count += 1;
+      val.frac = val.frac >> 4;
+    }
+    while (count++ < 16) {
+        s[idx++] = '0';
     }
     s[idx++] = '.';
   }
-  //convert whole
+
+  //convert whole part
   if(val.whole == 0){
-    s[idx] = '0';
+    s[idx++] = '0';
   }
   while(val.whole != 0){
-    uint64_t hex = val.whole % 16;
+    hex = val.whole & 15; // 0b1111
     if(hex < 10){
-      s[idx] = 48 + hex;
-      idx++;
+      s[idx++] = 48 + hex;
     }
     else{
-      s[idx] = 87 + hex;
-      idx++;
+      s[idx++] = 87 + hex;
     }
-    val.whole /= 16;
+    val.whole = val.whole >> 4;
   }
 
+  // end string
+  s[idx] = '\0';
+
+
+  // printf("string:%s Length: %d\n", s, (int)strlen(s));
+
+  // reverse the string
   for(size_t i = 0; i < strlen(s) / 2; i++){
     char temp = s[i];
     s[i] = s[strlen(s) - 1 - i];
     s[strlen(s) - 1 - i] = temp;
-  }  //strcpy(s, "<invalid>");
+  }  
+  
   //printf("string:%s Length: %d\n", s, (int)strlen(s));
   return s;
 }

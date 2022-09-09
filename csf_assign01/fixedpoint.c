@@ -175,7 +175,7 @@ Fixedpoint fixedpoint_negate(Fixedpoint val) {
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
   // if the rightmost bit is 1, then that means there's underflow
-  if (val.frac & 1) {
+  if (val.frac & 1UL) {
     // flip the right underflow depending on neg or positive
     if (fixedpoint_is_neg(val)) {
       val.tag |= 1;
@@ -188,7 +188,7 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
   uint64_t result_frac = val.frac >> 1;
 
   // move whole's rightmost bit to frac's leftmost bit
-  result_frac = (result_frac & ~(1UL << 63)) | (val.whole & 1);
+  result_frac = (result_frac & ~(1UL << 63)) | ((val.whole & 1) << 63);
 
   //shift the whole part
   uint64_t result_whole = val.whole >> 1;
@@ -236,15 +236,9 @@ int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
     else if (left.frac > right.frac) result = 1;
     else result = -1;
   } else {
-    if (left.whole == right.whole) return 0;
-    else if (left.whole > right.whole) result = 1;
+    if (left.whole > right.whole) result = 1;
     else result = -1;
   }
-
-  // // abs(result) must be  <= 1
-  // if (result != 0) {
-  //   result /= abs(result);
-  // }
 
   // If both are positive return 1 when left > right
   if (!fixedpoint_is_neg(left)  && !fixedpoint_is_neg(right)) {
@@ -367,7 +361,7 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
   if(fixedpoint_is_neg(val)){
     s[idx++] = '-';
   }
-  
+
   // end string
   s[idx] = '\0';
 

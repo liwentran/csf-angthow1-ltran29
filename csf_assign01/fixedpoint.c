@@ -296,56 +296,71 @@ int fixedpoint_is_valid(Fixedpoint val) {
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   char *s = malloc(34); // 16 whole, 16 frac values, 1 negative sign, 1 decimal point 
   int idx = 0; // index of array
-  uint64_t hex;
-  if (!fixedpoint_is_valid(val)) {   // if string is invalid, return invalid. 
+
+  // if string is invalid, return invalid. 
+  if (!fixedpoint_is_valid(val)) {   
     strcpy(s, "<invalid>");
     return s;
-  }   //convert fractional part
-  int count = 0;
-  int start = 0;
+  } 
+
+  //convert fractional part of val
   if(val.frac != 0){
-    while(val.frac != 0){
-      hex = val.frac & 15; // 0b1111
-      if (hex != 0) {
-        start = 1;
-      }
-      if (start){
-        if(hex < 10){
-          s[idx++] = 48 + hex;
-        }
-        else{
-          s[idx++] = 87 + hex;
-        }
-      }
-      count += 1;
-      val.frac = val.frac >> 4;
-    }
-    while (count++ < 16) {
-        s[idx++] = '0';
-    }
+    // add the fractional part to the string
+    append_int_to_string(val.frac, 1, s, &idx);
     s[idx++] = '.';
   }
-  if(val.whole == 0){   //convert whole part
+
+  // convert the whole part of val
+  if(val.whole == 0){ 
     s[idx++] = '0';
+  } else {
+    append_int_to_string(val.whole, 0, s, &idx);
   }
-  while(val.whole != 0){
-    hex = val.whole & 15; // 0b1111
-    if(hex < 10){
-      s[idx++] = 48 + hex;
-    }
-    else{
-      s[idx++] = 87 + hex;
-    }
-    val.whole = val.whole >> 4;
-  }
-  if(fixedpoint_is_neg(val)){   // add - if neg
+
+  if(fixedpoint_is_neg(val)){   // add '-' if neg
     s[idx++] = '-';
   }
+
   s[idx] = '\0';   // end string
+  reverse_string(s);
+  return s;
+}
+
+void append_int_to_string(uint64_t value, int is_frac, char *s, int *idx) {
+  uint64_t hex; 
+  // if the value is a frac, don't append extra zeros to the end
+  int start = is_frac ? 0 : 1;
+  int count = 0;
+
+  // convert the value into hex
+  while(value != 0){
+      hex = value & 15; // 0b1111 
+      // no longer trailing zeros, start adding to the string
+      if (hex != 0) start = 1; 
+      
+      if (start){
+        if (hex < 10) s[*idx] = 48 + hex; // 0 - 9
+        else s[*idx] = 87 + hex; // a - f
+        (*idx)++;
+      }
+      count++;
+      // shift bits in order to add the next char
+      value = value >> 4;
+  }
+
+  // add zeros
+  if (is_frac) {
+    while (count++ < 16) {
+      s[*idx] = '0';
+      (*idx)++;
+
+    }
+  }  
+}
+void reverse_string(char *s) {
   for(size_t i = 0; i < strlen(s) / 2; i++){   // reverse the string
     char temp = s[i];
     s[i] = s[strlen(s) - 1 - i];
     s[strlen(s) - 1 - i] = temp;
-  }  
-  return s;
+  }
 }

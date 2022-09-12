@@ -301,7 +301,6 @@ int fixedpoint_is_valid(Fixedpoint val); //liwen
 //   of the Fixedpoint value
 char *fixedpoint_format_as_hex(Fixedpoint val);
 
-
 /*
 * Turns a hex character to its numeric value.
 * If the passed in value is not between 0-9 or a-f, 
@@ -314,6 +313,26 @@ char *fixedpoint_format_as_hex(Fixedpoint val);
 *   the integer value of the hexidecimal character 
 */
 uint8_t hex_to_int(uint8_t c);
+
+/*
+* Appends a given int to an existing string
+* in reverse order. 
+*
+* Parameters:
+*   value - the uint64_t value to reformat as hex
+*   is_frac - boolean value indicating if this is the fractional part (1 for frac)
+*   s - the array of character to add the hex characters to
+*   idx - the index that we want to start appending the hex string to
+*/
+void append_int_to_string(uint64_t value, int is_frac, char *s, int *idx);
+
+/*
+* Reverses a string
+*
+* Parameters:
+*   s - the string to reverse
+*/
+void reverse_string(char *s);
 #endif // FIXEDPREC_H
 
 

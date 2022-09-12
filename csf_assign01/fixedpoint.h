@@ -11,10 +11,9 @@
 #include <stdint.h>
 
 typedef struct {
-  // TODO: add fields
   uint64_t whole;
   uint64_t frac;
-  uint8_t tag; 
+  uint8_t tag;  // view big flag reference below
 } Fixedpoint;
 
 // Tag Bit Flag Reference
@@ -26,6 +25,8 @@ typedef struct {
 //   0b000010 | is_positive_undeflow (1 if positive underflow else 0)
 //   0b000001 | is_negative_undeflow (1 if negative underflow else 0)
 // Least significant bit
+
+
 
 // Create a Fixedpoint value representing an integer.
 //

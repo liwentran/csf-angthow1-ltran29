@@ -82,7 +82,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   return fp;
 }
 
-// Helper functino to convert hex char to int
+// Helper function to convert hex char to int
 uint8_t hex_to_int(uint8_t c) {
   if (c >= '0' && c <= '9') {
     return c - '0';
@@ -91,6 +91,7 @@ uint8_t hex_to_int(uint8_t c) {
   } else if (c >= 'A' && c <= 'F') {
     return (c - 'A') + 10;
   } else {
+    // unrecognized value
     return -1;
   }
 }
@@ -326,6 +327,7 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
   return s;
 }
 
+// Helper function to append a provided int value to a string in hex format
 void append_int_to_string(uint64_t value, int is_frac, char *s, int *idx) {
   uint64_t hex; 
   // if the value is a frac, don't append extra zeros to the end
@@ -353,12 +355,13 @@ void append_int_to_string(uint64_t value, int is_frac, char *s, int *idx) {
     while (count++ < 16) {
       s[*idx] = '0';
       (*idx)++;
-
     }
   }  
 }
+
+// helper function to reversed a string
 void reverse_string(char *s) {
-  for(size_t i = 0; i < strlen(s) / 2; i++){   // reverse the string
+  for(size_t i = 0; i < strlen(s) / 2; i++){ 
     char temp = s[i];
     s[i] = s[strlen(s) - 1 - i];
     s[strlen(s) - 1 - i] = temp;

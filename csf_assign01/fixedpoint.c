@@ -99,28 +99,25 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
-  
   Fixedpoint sum = fixedpoint_create(0);
-  //positive + negative (subtract)
-  if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) {
-    //check which is bigger
-    if(left.whole > right.whole){
+  if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) {   //positive + negative (subtract)
+    if(left.whole > right.whole){     //Subtract right from left if left is bigger
       sum.whole = left.whole - right.whole;
       sum.frac = left.frac - right.frac;
-      if(right.frac > left.frac){
+      if(right.frac > left.frac){ //carry
         sum.whole -= 1;
       }
       sum.tag = left.tag;
     }
-    else if(right.whole > left.whole){
+    else if(right.whole > left.whole){ //Subtract left from right if right is bigger
       sum.whole = right.whole - left.whole;
       sum.frac = right.frac - left.frac;
-      if(left.frac > right.frac){
+      if(left.frac > right.frac){ //carry
         sum.whole -= 1;
       }
       sum.tag = right.tag;
     }
-    else{ //if whole is the same size
+    else{ //left and right have same whole
       sum.whole = 0;
       if(left.frac > right.frac){
         sum.frac = left.frac - right.frac;
@@ -132,21 +129,18 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
       } 
       else{
         sum.tag = 0; //valid
-        sum.frac = 0;
+        sum.frac = 0; 
       }
     }
   }
-  //if both positive or both negative
-  else{
+  else{   //if left and right are both positive or both negative
     sum.frac = left.frac + right.frac;
-    //check for carry
-    if(sum.frac < left.frac || sum.frac < right.frac){
+    if(sum.frac < left.frac || sum.frac < right.frac){     //check for carry
       sum.whole = 1;
     }
     sum.tag = left.tag;
     sum.whole += left.whole + right.whole;
-    //check overflow
-    if(sum.whole < left.whole || sum.whole < right.whole){
+    if(sum.whole < left.whole || sum.whole < right.whole){     //check overflow
       if(fixedpoint_is_neg(sum)){
         sum.tag |= 1 << 2; //overflow negative
       }

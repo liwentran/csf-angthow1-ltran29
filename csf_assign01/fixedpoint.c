@@ -99,10 +99,9 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
-
+  
   Fixedpoint sum = fixedpoint_create(0);
-
-  //positive + negative (subtract) cannot have overflow because subtracting. Underflow?
+  //positive + negative (subtract)
   if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) {
     //check which is bigger
     if(left.whole > right.whole){
@@ -121,7 +120,7 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
       }
       sum.tag = right.tag;
     }
-    else{
+    else{ //if whole is the same size
       sum.whole = 0;
       if(left.frac > right.frac){
         sum.frac = left.frac - right.frac;
@@ -137,7 +136,6 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
       }
     }
   }
-
   //if both positive or both negative
   else{
     sum.frac = left.frac + right.frac;
@@ -147,7 +145,6 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
     }
     sum.tag = left.tag;
     sum.whole += left.whole + right.whole;
-
     //check overflow
     if(sum.whole < left.whole || sum.whole < right.whole){
       if(fixedpoint_is_neg(sum)){
@@ -365,9 +362,6 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
   // end string
   s[idx] = '\0';
 
-
-  // printf("string:%s Length: %d\n", s, (int)strlen(s));
-
   // reverse the string
   for(size_t i = 0; i < strlen(s) / 2; i++){
     char temp = s[i];
@@ -375,6 +369,5 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     s[strlen(s) - 1 - i] = temp;
   }  
   
-  //printf("string:%s Length: %d\n", s, (int)strlen(s));
   return s;
 }

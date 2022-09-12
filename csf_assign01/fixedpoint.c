@@ -1,3 +1,10 @@
+/*
+ * Functions defining the operations of fixed point values.
+ * CSF Assignment 1
+ * Liwen Tran, Anthony Sky Ng-Thow-Hing
+ * ltran29@jhu.edu, angthow1@jhu.edu
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,11 +12,12 @@
 #include <assert.h>
 #include "fixedpoint.h"
 
+
 Fixedpoint fixedpoint_create(uint64_t whole) {
   Fixedpoint fp;
   fp.whole = whole;
-  fp.frac = 0;
-  fp.tag = 0;
+  fp.frac = 0; // fraction defaults to 0
+  fp.tag = 0; // tag defaults to 0
   return fp;
 }
 
@@ -17,40 +25,32 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   Fixedpoint fp;
   fp.whole = whole;
   fp.frac = frac;
-  fp.tag = 0;
+  fp.tag = 0; // tag defaults to 0
   return fp;
 }
 
-// assuming X and Y are 0-16 digits, we will not check for overflow
-// TODO: test if this works
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   // tracks if hex string contains minus sign
-  int has_minus_sign = 0;
-  int is_error = 0;
+  int has_minus_sign = 0, is_error = 0, count = 0;
+
+  // if the string has a negative sign, flag has_minus_sign, and move the pointer
   if (*hex == '-') {
     has_minus_sign = 1;
     hex++;
   }
-
-  uint64_t whole = 0;
-  uint64_t frac = 0;
-  int count = 0;
-
+  
+  uint64_t whole = 0, frac = 0;
   uint64_t *val = &whole;
-
+  
   while (*hex) {
     uint8_t c = *hex++;
-    count += 1;
+    count++;
 
     // find the decimal representation from the character
-    if (c >= '0' && c <= '9') {
-      c = c - '0';
-    } else if (c >= 'a' && c <= 'f') {
-      c = (c - 'a') + 10;
-    } else if (c >= 'A' && c <= 'F') {
-      c = (c - 'A') + 10;
+    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
+      c = hex_to_int(c);
     } else if (c == '.' && val == &whole) {
-      // once we hit the decimal point, find value of frac part
+      // once we hit the decimal point, find value of frac part, and reset the count
       val = &frac;
       count = 0;
       continue;
@@ -60,12 +60,12 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       break;
     }
 
-    // too many characters
+    // tag error if too many characters
     if (count > 16) {
       is_error = 1;
       break;
     }
-    // shift the existing bits to the left to make space
+    // shift the existing bits to the left to make space for the next char
     *val = (*val << 4) | (c);
   }
 
@@ -83,11 +83,22 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   }
 
   // set tag as error
-  if (is_error) {
-    fp.tag |= 1 << 4;
-  }
+  if (is_error) fp.tag |= 1 << 4;
   
   return fp;
+}
+
+// Helper functino to convert hex char to int
+uint8_t hex_to_int(uint8_t c) {
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  } else if (c >= 'a' && c <= 'f') {
+    return (c - 'a') + 10;
+  } else if (c >= 'A' && c <= 'F') {
+    return (c - 'A') + 10;
+  } else {
+    return -1;
+  }
 }
 
 uint64_t fixedpoint_whole_part(Fixedpoint val) {
@@ -229,30 +240,28 @@ Fixedpoint fixedpoint_double(Fixedpoint val) {
 
 
 int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
+  // if left is positive and right is negative, return 1
+  if (fixedpoint_is_neg(right) && !fixedpoint_is_neg(left)) {
+    return 1;
+  } else if (!fixedpoint_is_neg(right) && fixedpoint_is_neg(left)) {
+    return -1;
+  }
+
   int result = 0;
 
+  // compare the values
   if (left.whole == right.whole) {
-    if (left.frac == right.frac) return 0;
-    else if (left.frac > right.frac) result = 1;
-    else result = -1;
-  } else {
-    if (left.whole > right.whole) result = 1;
-    else result = -1;
-  }
+    if (left.frac > right.frac) result = 1;
+    else if (left.frac < right.frac) result = -1;
+    else return 0;
+  } else if (left.whole > right.whole) {
+    result = 1;
+  } else result = -1;
 
-  // If both are positive return 1 when left > right
-  if (!fixedpoint_is_neg(left)  && !fixedpoint_is_neg(right)) {
-    return result;
-  
   // If both are negative return 1 when abs(left) < abs(right)
-  } else if (fixedpoint_is_neg(left) && fixedpoint_is_neg(right)) {
-    return result * -1;
-    
-  } else {
-    // if one value is negative, the positive value is greater (return 1 if right is neg)
-    return (fixedpoint_is_neg(right)) ? 1 : -1;
-  }
+  if (fixedpoint_is_neg(left)) return result * -1;
 
+  return result;
 }
 
 
@@ -288,19 +297,6 @@ int fixedpoint_is_valid(Fixedpoint val) {
   return !(val.tag & 31); // tag & 11111
 }
 
-// Return a dynamically allocated C character string with the representation of
-// the given valid Fixedpoint value.  The string should start with "-" if the
-// value is negative, and should use the characters 0-9 and a-f to represent
-// each hex digit of the whole and fractional parts. As a special case, if the
-// Fixedpoint value represents an integer (i.e., the fractional part is 0),
-// then no "decimal point" ('.') should be included.
-//
-// Parameters:
-//   val - the Fixedpoint value
-//
-// Returns:
-//   dynamically allocated character string containing the representation
-//   of the Fixedpoint value
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   char *s = malloc(34); // 16 whole, 16 frac values, 1 negative sign, 1 decimal point 
   int idx = 0; // index of array

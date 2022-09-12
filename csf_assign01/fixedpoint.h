@@ -1,3 +1,10 @@
+/*
+ * Functions defining the operations of fixed point values.
+ * CSF Assignment 1
+ * Liwen Tran, Anthony Sky Ng-Thow-Hing
+ * ltran29@jhu.edu, angthow1@jhu.edu
+ */
+
 #ifndef FIXEDPREC_H
 #define FIXEDPREC_H
 
@@ -262,4 +269,19 @@ int fixedpoint_is_valid(Fixedpoint val); //liwen
 //   of the Fixedpoint value
 char *fixedpoint_format_as_hex(Fixedpoint val);
 
+
+/*
+* Turns a hex character to its numeric value.
+* If the passed in value is not between 0-9 or a-f, 
+* returns -1. 
+*
+* Parameters:
+*   c - a character representing a number in hexidecimal
+*
+* Returns:
+*   the integer value of the hexidecimal character 
+*/
+uint8_t hex_to_int(uint8_t c);
 #endif // FIXEDPREC_H
+
+

@@ -40,6 +40,10 @@ void my_test_is_zero(TestObjs *objs);
 void my_test_is_overflow_neg(TestObjs *objs);
 void my_test_is_underflow_pos(TestObjs *objs);
 void my_test_is_underflow_neg(TestObjs *objs);
+void my_test_sub_negatives(TestObjs *objs);
+void my_test_add_positives(TestObjs *objs);
+void my_test_add_negatives(TestObjs *objs);
+
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -56,12 +60,14 @@ int main(int argc, char **argv) {
   TEST(test_format_as_hex);
   TEST(test_negate);
   TEST(test_add);
-  //TEST(test_negative_sub_negative);
-  //TEST(test_add_two_positives);
+
   TEST(test_sub);
   // TEST(test_is_overflow_pos);
   TEST(test_is_err);
 
+  TEST(my_test_sub_negatives);
+  TEST(my_test_add_positives);
+  TEST(my_test_add_negatives);
   TEST(my_test_create_from_hex);
   TEST(my_test_is_err);
   TEST(my_test_halve);
@@ -227,63 +233,17 @@ void test_add(TestObjs *objs) {
   ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
 }
 
-/**
-void test_add_two_positives(TestObjs *objs) {
-  (void) objs;
-
-  Fixedpoint lhs, rhs, sum;
-  lhs = fixedpoint_create_from_hex("1AE.16"); //430.22
-  rhs = fixedpoint_create_from_hex("1F5.7"); //501.7
-  sum = fixedpoint_add(lhs, rhs);
-  ASSERT(lhs.whole = 430);
-  ASSERT(rhs.whole = 501);
-  ASSERT(!fixedpoint_is_neg(sum));
-  //printf("frac: %d", fixedpoint_frac_part(sum));
-  ASSERT(931UL == fixedpoint_whole_part(sum));
-  ASSERT(92UL == fixedpoint_frac_part(sum));
-}*/
-
-/**
-void test_add_positives(TestObjs *objs) {
-  (void) objs;
-
-  Fixedpoint lhs, rhs, sum;
-
-  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
-  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
-  sum = fixedpoint_add(lhs, rhs);
-  ASSERT(fixedpoint_is_neg(sum));
-  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
-  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
-}
-*/
-
-/**
-void test_add_negatives(TestObjs *objs) {
-  (void) objs;
-
-  Fixedpoint lhs, rhs, sum;
-
-  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
-  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
-  sum = fixedpoint_add(lhs, rhs);
-  ASSERT(fixedpoint_is_neg(sum));
-  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
-  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
-}
-*/
-
 void test_negative_sub_negative(TestObjs *objs) {
   (void) objs;
 
-  Fixedpoint lhs, rhs, diff;
+  Fixedpoint lhs, rhs, sum;
 
   lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
   rhs = fixedpoint_create_from_hex("-d09079.1e6d601");
-  diff = fixedpoint_sub(lhs, rhs);
-  ASSERT(fixedpoint_is_neg(diff));
-  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(diff));
-  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(diff));
+  sum = fixedpoint_sub(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
+  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
 }
 
 void test_sub(TestObjs *objs) {
@@ -348,6 +308,49 @@ void test_is_err(TestObjs *objs) {
 }
 
 // TODO: implement more test functions
+
+//My test to test adding two negatives together
+void my_test_add_negatives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("-d09079.1e6d601");
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a2643e80UL == fixedpoint_whole_part(sum));
+  ASSERT(0x98bf3eaea0538c50UL == fixedpoint_frac_part(sum));
+}
+
+//My test to test subtracting two negatives together
+void my_test_sub_negatives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a0c31d8eUL == fixedpoint_whole_part(sum));
+  ASSERT(0x5be47e8ea0538c50UL == fixedpoint_frac_part(sum));
+}
+
+//My teset adding two positives together
+void my_test_add_positives(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
+  
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(!fixedpoint_is_neg(sum));
+  ASSERT(0xc7252a2643e80UL == fixedpoint_whole_part(sum));
+  ASSERT(0x98bf3eaea0538c50UL == fixedpoint_frac_part(sum));
+}
 
 // My own test to test that create from hex works properly
 void my_test_create_from_hex(TestObjs *objs) {

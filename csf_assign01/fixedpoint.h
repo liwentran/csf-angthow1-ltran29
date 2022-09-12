@@ -98,6 +98,38 @@ uint64_t fixedpoint_frac_part(Fixedpoint val); // both
 //   the overflow was positive or negative)
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right); // sky
 
+// Helper function for fixedpoint_add that computes the sum of two valid Fixedpoint values with the same sign.
+//
+// Parameters:
+//   left - the left Fixedpoint value
+//   right - the right Fixedpoint value
+//
+// Returns:
+//   if the sum left + right is in the range of values that can be represented
+//   exactly, the sum is returned;
+//   if the sum left + right is not in the range of values that can be
+//   represented, then a value for which either fixedpoint_is_overflow_pos or
+//   fixedpoint_is_overflow_neg returns true is returned (depending on whether
+//   the overflow was positive or negative)
+Fixedpoint fixedpoint_add_same_sign(Fixedpoint left, Fixedpoint right); 
+
+// Helper function for fixedpoint_add that computes the sum of two valid Fixedpoint values with different signs.
+//
+// Parameters:
+//   left - the left Fixedpoint value
+//   right - the right Fixedpoint value
+//
+// Returns:
+//   if the sum left + right is in the range of values that can be represented
+//   exactly, the sum is returned;
+//   if the sum left + right is not in the range of values that can be
+//   represented, then a value for which either fixedpoint_is_overflow_pos or
+//   fixedpoint_is_overflow_neg returns true is returned (depending on whether
+//   the overflow was positive or negative)
+Fixedpoint fixedpoint_add_dif_sign(Fixedpoint left, Fixedpoint right); 
+
+
+
 // Compute the difference of two valid Fixedpoint values.
 //
 // Parameters:

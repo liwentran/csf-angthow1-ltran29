@@ -68,17 +68,11 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     // shift the existing bits to the left to make space for the next char
     *val = (*val << 4) | (c);
   }
-
-  // if we hex string has frac part, make sure that we fill the rest with zero
-  if (val == &frac && count < 16) {
+  if (val == &frac && count < 16) {   // if we hex string has frac part, make sure that we fill the rest with zero
     *val = *val << (16 - count)*4;
   }
-  
-  // create the fixedpoint and edit tag
-  Fixedpoint fp = fixedpoint_create2(whole,frac);
-
-  // set is_negative if hex string had negative sign and value is not zero. 
-  if (has_minus_sign && (whole != 0 || frac != 0)) {
+  Fixedpoint fp = fixedpoint_create2(whole,frac);   // create the fixedpoint and edit tag
+  if (has_minus_sign && (whole != 0 || frac != 0)) {   // set is_negative if hex string had negative sign and value is not zero. 
     fp.tag = 1 << 5;
   }
 
@@ -110,57 +104,60 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
+  if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) { //positive + negative (subtract)
+    return fixedpoint_add_dif_sign(left, right);
+  }
+  else{ //if left and right are both positive or both negative
+    return fixedpoint_add_same_sign(left, right);
+  }
+}
 
+Fixedpoint fixedpoint_add_dif_sign(Fixedpoint left, Fixedpoint right){
   Fixedpoint sum = fixedpoint_create(0);
-
-  //positive + negative (subtract) cannot have overflow because subtracting. Underflow?
-  if (fixedpoint_is_neg(left) ^ fixedpoint_is_neg(right)) {
-    //check which is bigger
-    if(left.whole > right.whole){
-      sum.whole = left.whole - right.whole;
+  if(left.whole > right.whole){     //Subtract right from left if left is bigger
+    sum.whole = left.whole - right.whole;
+    sum.frac = left.frac - right.frac;
+    if(right.frac > left.frac){ //carry
+      sum.whole -= 1;
+    }
+    sum.tag = left.tag;
+  }
+  else if(right.whole > left.whole){ //Subtract left from right if right is bigger
+    sum.whole = right.whole - left.whole;
+    sum.frac = right.frac - left.frac;
+    if(left.frac > right.frac){ //carry
+      sum.whole -= 1;
+    }
+    sum.tag = right.tag;
+  }
+  else{ //left and right have same whole
+    sum.whole = 0;
+    if(left.frac > right.frac){
       sum.frac = left.frac - right.frac;
-      if(right.frac > left.frac){
-        sum.whole -= 1;
-      }
       sum.tag = left.tag;
-    }
-    else if(right.whole > left.whole){
-      sum.whole = right.whole - left.whole;
+    } 
+    else if(left.frac > right.frac){
       sum.frac = right.frac - left.frac;
-      if(left.frac > right.frac){
-        sum.whole -= 1;
-      }
       sum.tag = right.tag;
-    }
+    } 
     else{
-      sum.whole = 0;
-      if(left.frac > right.frac){
-        sum.frac = left.frac - right.frac;
-        sum.tag = left.tag;
-      }
-      else if(left.frac > right.frac){
-        sum.frac = right.frac - left.frac;
-        sum.tag = right.tag;
-      } 
-      else{
-        sum.tag = 0; //valid
-        sum.frac = 0;
-      }
+      sum.tag = 0; //valid
+      sum.frac = 0; 
     }
   }
+  return sum;
+}
 
-  //if both positive or both negative
-  else{
+
+Fixedpoint fixedpoint_add_same_sign(Fixedpoint left, Fixedpoint right){
+    Fixedpoint sum = fixedpoint_create(0);
     sum.frac = left.frac + right.frac;
-    //check for carry
-    if(sum.frac < left.frac || sum.frac < right.frac){
+    if(sum.frac < left.frac || sum.frac < right.frac){ //check for carry
       sum.whole = 1;
     }
     sum.tag = left.tag;
     sum.whole += left.whole + right.whole;
-
-    //check overflow
-    if(sum.whole < left.whole || sum.whole < right.whole){
+    if(sum.whole < left.whole || sum.whole < right.whole){ //check overflow
       if(fixedpoint_is_neg(sum)){
         sum.tag |= 1 << 2; //overflow negative
       }
@@ -168,8 +165,7 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
         sum.tag |= 1 << 3; //overflow positive
       }
     }
-  }
-  return sum;
+    return sum;
 }
 
 Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
@@ -301,16 +297,10 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
   char *s = malloc(34); // 16 whole, 16 frac values, 1 negative sign, 1 decimal point 
   int idx = 0; // index of array
   uint64_t hex;
-
-  // if string is invalid, return invalid. 
-  if (!fixedpoint_is_valid(val)) {
+  if (!fixedpoint_is_valid(val)) {   // if string is invalid, return invalid. 
     strcpy(s, "<invalid>");
     return s;
-  }
-
-  
-
-  //convert fractional part
+  }   //convert fractional part
   int count = 0;
   int start = 0;
   if(val.frac != 0){
@@ -327,7 +317,6 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
           s[idx++] = 87 + hex;
         }
       }
-      
       count += 1;
       val.frac = val.frac >> 4;
     }
@@ -336,9 +325,7 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     }
     s[idx++] = '.';
   }
-
-  //convert whole part
-  if(val.whole == 0){
+  if(val.whole == 0){   //convert whole part
     s[idx++] = '0';
   }
   while(val.whole != 0){
@@ -351,26 +338,14 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     }
     val.whole = val.whole >> 4;
   }
-
-
-  // add - if neg
-  if(fixedpoint_is_neg(val)){
+  if(fixedpoint_is_neg(val)){   // add - if neg
     s[idx++] = '-';
   }
-
-  // end string
-  s[idx] = '\0';
-
-
-  // printf("string:%s Length: %d\n", s, (int)strlen(s));
-
-  // reverse the string
-  for(size_t i = 0; i < strlen(s) / 2; i++){
+  s[idx] = '\0';   // end string
+  for(size_t i = 0; i < strlen(s) / 2; i++){   // reverse the string
     char temp = s[i];
     s[i] = s[strlen(s) - 1 - i];
     s[strlen(s) - 1 - i] = temp;
   }  
-  
-  //printf("string:%s Length: %d\n", s, (int)strlen(s));
   return s;
 }

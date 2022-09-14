@@ -1,0 +1,11 @@
+/*.o
+/depend.mak
+/out.png
+/c_draw
+/c_test_drawing_funcs
+/asm_draw
+/asm_test_drawing_funcs
+/inflate_png
+/fix_transparency
+/img_to_picture
+/out

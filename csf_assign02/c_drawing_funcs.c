@@ -25,29 +25,72 @@ int32_t in_bounds(struct Image *img, int32_t x, int32_t y){
 }
 
 // Computes the index of a pixel in an image’s data array given its x and y coordinates
-uint32_t compute_index(struct Image *img, int32_t x, int32_t y);
+//
+// Parameters:
+//   img     - pointer to struct Image
+//   x       - x coordinate
+//   y       - y coordinate
+uint32_t compute_index(struct Image *img, int32_t x, int32_t y) {
+  return (y * img->width) + x;
+}
 
 // Constrains a value so that it is greater than or equal to min and less than or equal to max.
-int32_t clamp(int32_t val, int32_t min, int32_t max);
+// 
+// Parameters:
+//   img     - pointer to struct Image
+//   min     - minimum value
+//   max     - maximum value
+int32_t clamp(int32_t val, int32_t min, int32_t max) {
+  if (val > max) {
+    return max;
+  } else if (val < min){
+    return min;
+  } else {
+    return val;
+  }
+}
 
 // Returns the red component of a pixel color value
-uint8_t get_r(uint32_t color);
+// Bits 24-31 are the 8 bit red component value
+// 
+// Parameters:
+//   color     - uint32_t color value
+uint8_t get_r(uint32_t color) {
+  return (color >> 24) & 255;
+}
 
 // Returns the green component of a pixel color value
-uint8_t get_g(uint32_t color);
+// Bits 16-23 are the 8 bit green component value
+// 
+// Parameters:
+//   color     - uint32_t color value
+uint8_t get_g(uint32_t color) {
+  return (color >> 16) & 255;
+}
 
 // Returns the blue component of a pixel color value
-uint8_t get_b(uint32_t color);
+// Bits 8–15 are the 8 bit blue component value
+// 
+// Parameters:
+//   color     - uint32_t color value
+uint8_t get_b(uint32_t color) {
+  return (color >> 8) & 255;
+}
 
-// Returns the alpha component of a pixel color ˜value
-uint8_t get_a(uint32_t color);
+// Returns the alpha component of a pixel color value
+// Bits 0–7 are the 8 bit alpha value
+// 
+// Parameters:
+//   color     - uint32_t color value
+uint8_t get_a(uint32_t color) {
+  return color & 255; // 0b11111111
+}
 
 // Blends foreground and background color component values using a specified alpha (opacity) value.
 uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha){
   //blend individual component
   return (alpha * fg + (255 - alpha) * bg) / 255;
 }
-
 
 // Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color
 uint32_t blend_colors(uint32_t fg, uint32_t bg){

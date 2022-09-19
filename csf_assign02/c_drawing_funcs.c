@@ -9,8 +9,21 @@
 // Helper functions
 ////////////////////////////////////////////////////////////////////////
 
+//
 // Checks x and y coordinates to determine whether they are in bounds in the specified image.
-int32_t in_bounds(struct Image *img, int32_t x, int32_t y); 
+//
+// Parameters:
+//   img   - pointer to struct Image
+//   x     - x coordinate (pixel column)
+//   y     - y coordinate (pixel row)
+//
+int32_t in_bounds(struct Image *img, int32_t x, int32_t y){
+
+  if(x < 0 || x > img->width || y < 0 || y > img->height){
+    return 0;
+  }
+  return 1;
+}
 
 // Computes the index of a pixel in an image’s data array given its x and y coordinates
 uint32_t compute_index(struct Image *img, int32_t x, int32_t y);

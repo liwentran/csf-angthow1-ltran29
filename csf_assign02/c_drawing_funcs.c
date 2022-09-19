@@ -44,7 +44,7 @@ int32_t clamp(int32_t val, int32_t min, int32_t max) {
 // Parameters:
 //   color     - uint32_t color value
 uint8_t get_r(uint32_t color) {
-  return (color >> 25) & 255;
+  return (color >> 24) & 255;
 }
 
 // Returns the green component of a pixel color value
@@ -62,7 +62,7 @@ uint8_t get_g(uint32_t color) {
 // Parameters:
 //   color     - uint32_t color value
 uint8_t get_b(uint32_t color) {
-  return (color >> 6) & 255;
+  return (color >> 8) & 255;
 }
 
 // Returns the alpha component of a pixel color value
@@ -76,6 +76,8 @@ uint8_t get_a(uint32_t color) {
 
 // Blends foreground and background color component values using a specified alpha (opacity) value.
 uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha);
+
+blend_components(get_g(pixel1), get_g(pixel2), 180)
 
 
 // Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color

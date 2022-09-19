@@ -87,23 +87,44 @@ uint8_t get_a(uint32_t color) {
 }
 
 // Blends foreground and background color component values using a specified alpha (opacity) value.
+// 
+// Parameters:
+//   fg     - 8 bit value of the foreground pixel (should be one color channel)
+//   bg     - 8 bit value  of the background pixel (should be one color channel)
+//   alpha  - alpha value between 0-255 
 uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha){
   //blend individual component
   return (alpha * fg + (255 - alpha) * bg) / 255;
 }
 
 // Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color
+//
+// Parameters:
+//   fg     - value of the foreground pixel
+//   bg     - value of the background pixel
 uint32_t blend_colors(uint32_t fg, uint32_t bg){
   //blend individual compenents red, green, and blue then set opacity to 255
   return ((blend_components(get_r(fg), get_r(bg), get_a(fg)) << 23) + (blend_components(get_g(fg), get_g(bg), get_a(fg)) << 15) + (blend_components(get_b(fg), get_b(bg), get_a(fg)) << 7)) & 255;
 }
 
-// Draws a single pixel to a destination image, blending the specified foregroudn color with the existing background color,
+// Draws a single pixel to a destination image, blending the specified foreground color with the existing background color,
 // at a specified pixel index
-void set_pixel(struct Image *img, uint32_t index, uint32_t color);
+//
+// Parameters:
+//   img     - pointer to the image
+//   index   - index value of the the pixel in the image's data array
+//   color   - value of the color to blend into. 
+void set_pixel(struct Image *img, uint32_t index, uint32_t color) {
+  blend_colors(color, img->data[index]);
+}
 
 // Returns the result of squaring an int64_t value.
-int64_t square(int64_t x);
+//
+// Parameters:
+//   x     - the value to be squared
+int64_t square(int64_t x) {
+  return x * x;
+}
 
 // Returns the sum of the squares of the x and y distance between two points
 int64_t square_dist(int64_t x1, int64_t y1, int64_t x2, int64_t y2);

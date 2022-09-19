@@ -9,7 +9,43 @@
 // Helper functions
 ////////////////////////////////////////////////////////////////////////
 
-// TODO: implement helper functions
+// Checks x and y coordinates to determine whether they are in bounds in the specified image.
+int32_t in_bounds(struct Image *img, int32_t x, int32_t y); 
+
+// Computes the index of a pixel in an image’s data array given its x and y coordinates
+uint32_t compute_index(struct Image *img, int32_t x, int32_t y);
+
+// Constrains a value so that it is greater than or equal to min and less than or equal to max.
+int32_t clamp(int32_t val, int32_t min, int32_t max);
+
+// Returns the red component of a pixel color value
+uint8_t get_r(uint32_t color);
+
+// Returns the green component of a pixel color value
+uint8_t get_g(uint32_t color);
+
+// Returns the blue component of a pixel color value
+uint8_t get_b(uint32_t color);
+
+// Returns the alpha component of a pixel color ˜value
+uint8_t get_a(uint32_t color);
+
+// Blends foreground and background color component values using a specified alpha (opacity) value.
+uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha);
+
+
+// Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color
+uint32_t blend_colors(uint32_t fg, uint32_t bg);
+
+// Draws a single pixel to a destination image, blending the specified foregroudn color with the existing background color,
+// at a specified pixel index
+void set_pixel(struct Image *img, uint32_t index, uint32_t color);
+
+// Returns the result of squaring an int64_t value.
+int64_t square(int64_t x);
+
+// Returns the sum of the squares of the x and y distance between two points
+int64_t square_dist(int64_t x1, int64_t y1, int64_t x2, int64_t y2);
 
 ////////////////////////////////////////////////////////////////////////
 // API functions

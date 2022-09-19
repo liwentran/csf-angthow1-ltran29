@@ -9,7 +9,6 @@
 // Helper functions
 ////////////////////////////////////////////////////////////////////////
 
-//
 // Checks x and y coordinates to determine whether they are in bounds in the specified image.
 //
 // Parameters:
@@ -44,7 +43,9 @@ uint8_t get_b(uint32_t color);
 uint8_t get_a(uint32_t color);
 
 // Blends foreground and background color component values using a specified alpha (opacity) value.
-uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha);
+uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha){
+  return (get_a(fg) * fg + (255 - get_a(fg)) * bg) / 255;
+}
 
 
 // Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color

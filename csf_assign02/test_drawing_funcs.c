@@ -5,7 +5,19 @@
 #include "image.h"
 #include "drawing_funcs.h"
 #include "tctest.h"
-// TODO: add prototypes for your helper functions
+
+//  prototypes for your helper functions
+void test_in_bounds();
+void test_compute_index();
+void test_clamp();
+void test_get_r();
+void test_get_g();
+void test_get_b();
+void test_get_a();
+void test_blend_components();
+void test_blend_colors();
+void test_set_pixel();
+void test_square_dist();
 
 // an expected color identified by a (non-zero) character code
 typedef struct {
@@ -93,6 +105,17 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   // TODO: add TEST() directives for your helper functions
+  TEST(test_in_bounds);
+  TEST(test_compute_index);
+  TEST(test_clamp);
+  TEST(test_get_r);
+  TEST(test_get_g);
+  TEST(test_get_b);
+  TEST(test_get_a);
+  TEST(test_blend_components);
+  TEST(test_blend_colors);
+  TEST(test_set_pixel);
+  TEST(test_square_dist);
   TEST(test_draw_pixel);
   TEST(test_draw_rect);
   TEST(test_draw_circle);
@@ -101,6 +124,50 @@ int main(int argc, char **argv) {
   TEST(test_draw_sprite);
 
   TEST_FINI();
+}
+
+void test_in_bounds() {
+  
+}
+
+void test_compute_index() {
+
+}
+
+void test_clamp() {
+
+}
+
+void test_get_r() {
+
+}
+
+void test_get_g() {
+
+}
+
+void test_get_b() {
+
+}
+
+void test_get_a() {
+
+}
+
+void test_blend_components() {
+
+}
+
+void test_blend_colors() {
+
+}
+
+void test_set_pixel() {
+
+}
+
+void test_square_dist() {
+
 }
 
 void test_draw_pixel(TestObjs *objs) {

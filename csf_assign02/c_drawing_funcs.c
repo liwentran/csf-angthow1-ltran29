@@ -194,6 +194,14 @@ void draw_circle(struct Image *img,
                  int32_t x, int32_t y, int32_t r,
                  uint32_t color) {
   // TODO: implement
+    for (int x1 = x - r; x1 < x + r; x1++) {
+    for (int y1 = y - r; y1 < y + r; y1++) {
+      //check if distnace is less than or equal the radius
+      if(square_dist(x, y, x1, y1) <= square(r)){
+        draw_pixel(img, x1, y1, color);
+      }
+    }
+  }
 }
 
 //

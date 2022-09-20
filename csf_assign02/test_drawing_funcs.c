@@ -86,7 +86,7 @@ void test_get_b();
 void test_get_a();
 void test_blend_components();
 void test_blend_colors();
-void test_set_pixel();
+void test_set_pixel(TestObjs *objs);
 void test_square_dist();
 
 // prototypes of test functions
@@ -179,12 +179,12 @@ void test_blend_colors() {
   ASSERT(res == 0b1110011100010011000110111111111);
 }
 
-void test_set_pixel() {
-
+void test_set_pixel(TestObjs *objs) {
+  
 }
 
 void test_square_dist() {
-
+  ASSERT(square_dist(4,6,8,9) == 25);
 }
 
 void test_draw_pixel(TestObjs *objs) {

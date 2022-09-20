@@ -221,18 +221,21 @@ void draw_tile(struct Image *img,
                struct Image *tilemap,
                const struct Rect *tile) {
   // tile rectangle is not entirely within the bounds of tilemap, do nothing
-  if (tilemap->width < (tile->x + tile->width) || tilemap->height < (tile->y + tile->height) ) {
+  if (!in_bounds(tilemap, tile->x, tile->y) || !in_bounds(tilemap, tile->x + tile->width-1, tile->y + tile->height-1)) {
     return;
   }
 
   // Then, copy pixel data from tilemap to destination image
 
   // Only set the pixels that are covered by the rectangle. 
-  for (int r = x; r < (x + tile->width); r++) {
-    for (int c = y; c < (y + tile->height); c++) {
+  for (int32_t r = x; r < x + tile->width; r++) {
+     for (int32_t c = y; c < y + tile->height; c++) {
       // check whether in bound, and then set the img's pixel to be the tilemap's pixel
-      if (in_bounds(img, r, c)) {
-        img->data[compute_index(img, r, c)] = tilemap->data[compute_index(img, r + (-x + tile->x), c + (-y + tile->y))];
+      if (in_bounds(img, r, c)){
+        uint32_t img_idx = compute_index(img, r, c);
+        uint32_t tile_idx = compute_index(tilemap, tile->x + (r - x), tile->y + (c - y));
+        
+        img->data[img_idx] = tilemap->data[tile_idx];
       }
     }
   }

@@ -229,10 +229,10 @@ void draw_tile(struct Image *img,
 
   // Only set the pixels that are covered by the rectangle. 
   for (int r = x; r < (x + tile->width); r++) {
-    for (int c = y; y < (c + tile->height); c++) {
+    for (int c = y; c < (y + tile->height); c++) {
       // check whether in bound, and then set the img's pixel to be the tilemap's pixel
       if (in_bounds(img, r, c)) {
-        img->data[compute_index(img, r, c)] = tilemap->data[compute_index(img, r, c)];
+        img->data[compute_index(img, r, c)] = tilemap->data[compute_index(img, r + (-x + tile->x), c + (-y + tile->y))];
       }
     }
   }
@@ -266,9 +266,9 @@ void draw_sprite(struct Image *img,
 
   // Only set the pixels that are covered by the rectangle. 
   for (int r = x; r < (x + sprite->width); r++) {
-    for (int c = y; y < (c + sprite->height); c++) {
+    for (int c = y; c < (y + sprite->height); c++) {
       // check whether in bound, and then set the img's pixel to be the tilemap's pixel
-      draw_pixel(img, r, c, spritemap->data[compute_index(spritemap, r, c)]);
+      draw_pixel(img, r, c, spritemap->data[compute_index(spritemap, r + (-x + sprite->x), c + (-y + sprite->y))]);
     }
   } 
 }

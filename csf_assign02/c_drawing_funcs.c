@@ -16,9 +16,11 @@
 //   x     - x coordinate (pixel column)
 //   y     - y coordinate (pixel row)
 //
+// Returns:
+//           0 if false (not in bound), or 1 if true (in bounds)
 int32_t in_bounds(struct Image *img, int32_t x, int32_t y){
 
-  if(x < 0 || x > img->width || y < 0 || y > img->height){
+  if(x < 0 || x >= img->width || y < 0 || y >= img->height){
     return 0;
   }
   return 1;
@@ -104,7 +106,7 @@ uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha){
 //   bg     - value of the background pixel
 uint32_t blend_colors(uint32_t fg, uint32_t bg){
   //blend individual compenents red, green, and blue then set opacity to 255
-  return ((blend_components(get_r(fg), get_r(bg), get_a(fg)) << 23) + (blend_components(get_g(fg), get_g(bg), get_a(fg)) << 15) + (blend_components(get_b(fg), get_b(bg), get_a(fg)) << 7)) & 255;
+  return ((blend_components(get_r(fg), get_r(bg), get_a(fg)) << 24) + (blend_components(get_g(fg), get_g(bg), get_a(fg)) << 16) + (blend_components(get_b(fg), get_b(bg), get_a(fg)) << 8)) | 255;
 }
 
 // Draws a single pixel to a destination image, bending the specified foreground color with the elxisting background color,

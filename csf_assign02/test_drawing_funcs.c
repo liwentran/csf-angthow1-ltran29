@@ -180,7 +180,16 @@ void test_blend_colors() {
 }
 
 void test_set_pixel(TestObjs *objs) {
-  
+  // initially objs->small pixels are opaque black
+  ASSERT(objs->small.data[SMALL_IDX(3, 2)] == 0x000000FFU);
+
+  // test drawing completely opaque pixels
+  set_pixel(&objs->small, compute_index(&objs->small, 3, 2), 0xFF0000FF); // opaque red
+  ASSERT(objs->small.data[compute_index(&objs->small, 3, 2)] == 0xFF0000FF);
+
+  // test color blending
+  set_pixel(&objs->small, compute_index(&objs->small, 3, 2), 0x00FF0080); // half-opaque full-intensity green
+  ASSERT(objs->small.data[compute_index(&objs->small, 3, 2)] == 0x7F8000FF);
 }
 
 void test_square_dist() {

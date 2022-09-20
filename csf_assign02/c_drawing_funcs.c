@@ -174,7 +174,7 @@ void draw_rect(struct Image *img,
                const struct Rect *rect,
                uint32_t color) {
   for (int x = rect->x; x < (rect->x + rect->width); x++) {
-    for (int y = rect->y; y < (rect->y + rect->width); y++) {
+    for (int y = rect->y; y < (rect->y + rect->height); y++) {
       draw_pixel(img, x, y, color);
     }
   }

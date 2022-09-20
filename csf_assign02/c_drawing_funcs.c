@@ -168,7 +168,11 @@ void draw_pixel(struct Image *img, int32_t x, int32_t y, uint32_t color) {
 void draw_rect(struct Image *img,
                const struct Rect *rect,
                uint32_t color) {
-  // TODO: implement
+  for (int x = rect->x; x < (rect->x + rect->width); x++) {
+    for (int y = rect->y; y < (rect->y + rect->width); y++) {
+      draw_pixel(img, x, y, color);
+    }
+  }
 }
 
 //

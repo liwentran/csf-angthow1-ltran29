@@ -127,6 +127,12 @@ int64_t square(int64_t x) {
 }
 
 // Returns the sum of the squares of the x and y distance between two points
+//
+// Parameters:
+//   x1    - the x value of the first point
+//   y1    - the y value of the first point
+//   x2    - the x value of the second point
+//   y2    - the y value of the second point
 int64_t square_dist(int64_t x1, int64_t y1, int64_t x2, int64_t y2){
   return square(x1 - x2) + square(y1 - y2);
 }

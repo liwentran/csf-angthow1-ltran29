@@ -192,20 +192,31 @@ set_pixel:
  */
 	.globl square
 square:
-	movl %rdi, %rax		/* move 1st argument register in func call to return value register */
-	imull %rax, %rax	/* multiply by itself */
+	movq %rdi, %rax		/* move 1st argument register in func call to return value register */
+	imulq %rax, %rax	/* multiply by itself */
 	ret
 
 /* Returns the sum of the squares of the x and y distance between two points
- *
+ * 		return square(x1 - x2) + square(y1 - y2);
  * Parameters:
- *   %rdi     - the x value of the first point
- *   %rsi     - the y value of the first point
- *   %rdx     - the x value of the second point
- *   %rcx     - the y value of the second point
+ *   %rdi     - the x value of the first point (x1)
+ *   %rsi     - the y value of the first point (y1)
+ *   %rdx     - the x value of the second point (x2)
+ *   %rcx     - the y value of the second point (y2)
  */
 	.globl square_dist
 square_dist:
+	subq %rdx, %rdi		/* subtract x2 from x1 */
+	call square			/* call square function with rdi = x2 - x1*/
+	movq %rax, %r10	/* store result in temp registrar */
+
+	subq %rcx, %rsi		/* subtract y2 from y1 */
+	movq %rsi, %rdi		/* move y2-y1 to rdi */
+	call square			/* call square function with rdi = y2 - y1 */
+	addq %rax, %r10	/* add the result to the temporary register  */
+
+	movq %r10, %rax	/* move the result to the return value register */
+	
 	ret
 
 /***********************************************************************

@@ -35,26 +35,26 @@
  */
 	.globl in_bounds
 in_bounds:
-	movl IMAGE_WIDTH_OFFSET(%rdi), %r10d // move pointer value of image width to temporary registrar %r10
-	movl IMAGE_HEIGHT_OFFSET(%rdi), %r11d // move pointer value of image width to temporary registrar %r11
+	movl IMAGE_WIDTH_OFFSET(%rdi), %r10d	/* move pointer value of image width to temporary registrar %r10 */
+	movl IMAGE_HEIGHT_OFFSET(%rdi), %r11d	/* move pointer value of image width to temporary registrar %r11 */
 	
-	cmpl $0, %esi // Compare 0 with esi
-	jl .Lout_of_bounds // jump to Lout_of_bounds if esi is less than 0
+	cmpl $0, %esi		/* Compare 0 with esi */
+	jl .Lout_of_bounds	/* jump to Lout_of_bounds if esi is less than 0  */
 
-	cmpl $0, %edx // Compare 0 with edx
-	jl .Lout_of_bounds // jump to Lout_of_bounds if edx is less than 0
+	cmpl $0, %edx		/* Compare 0 with edx */
+	jl .Lout_of_bounds 	/* jump to Lout_of_bounds if edx is less than 0  */
 
-	cmpl %r10d, %esi // Compare r10d with esi
-	jge .Lout_of_bounds // jump to Lout_of_bounds if esi is greater than or equal to r10
+	cmpl %r10d, %esi 	/* Compare r10d with esi */
+	jge .Lout_of_bounds	/* jump to Lout_of_bounds if esi is greater than or equal to r10 */
 	
-	cmpl %r11d, %edx // Compare r11d with edx
-	jge .Lout_of_bounds // jump to Lout_of_bounds if edx is greater than or equal to r11
+	cmpl %r11d, %edx 	/* Compare r11d with edx */
+	jge .Lout_of_bounds /* jump to Lout_of_bounds if edx is greater than or equal to r11 */
 
-	movl $1, %eax // move 1 to eax return registrar
-	jmp .Lin_bounds_end // jump to end
+	movl $1, %eax 		/* move 1 to eax return registrar */
+	jmp .Lin_bounds_end /* jump to end */
 
 	.Lout_of_bounds:
-	movl $0, %eax //move 0 to eax return registrar
+	movl $0, %eax 		/* move 0 to eax return registrar */
 	
 	.Lin_bounds_end:
 	ret
@@ -69,78 +69,109 @@ in_bounds:
  */
 	.globl compute_index
 compute_index:
-	movl IMAGE_WIDTH_OFFSET(%rdi), %eax		// offset Image to get width and store in return value register
-	imull %edx, %eax						// multiply value by y coordinate
-	addl %esi, %eax							// add x coordinate to return value
+	movl IMAGE_WIDTH_OFFSET(%rdi), %eax		/* offset Image to get width and store in return value register */
+	imull %edx, %eax						/* multiply value by y coordinate */
+	addl %esi, %eax							/* add x coordinate to return value */
 	ret
 
+/* Constrains a value so that it is greater than or equal to min and less than or equal to max.
+ *
+ * Parameters:
+ *   %edi     - pointer to struct Image
+ *   %esi     - minimum value
+ *   %edx     - maximum value
+ */
 	.globl clamp
 clamp:
-	movl %edi, %eax // move 1st argument register in func call to return value register
+	movl %edi, %eax		/* move 1st argument register in func call to return value register */
 
-	cmpl %edx, %edi // Compare edx and edi
-	jg .Lclamp_max // jump to Lmax If edi is greater than edx
+	cmpl %edx, %edi		/* Compare edx and edi */
+	jg .Lclamp_max		/* jump to Lmax If edi is greater than edx */
 
-  	cmpl %esi, %edi // Compare esi and dsi
-	jl .Lclamp_min // jump to Lmin If edi is less than esi
+  	cmpl %esi, %edi 	/* Compare esi and dsi */
+	jl .Lclamp_min 		/* jump to Lmin If edi is less than esi */
 
-	jmp .Lclamp_end // Jump to the end
+	jmp .Lclamp_end 	/* Jump to the end */
 
 .Lclamp_max:
-	movl %edx, %eax // move 3rd argument register in func call to return value register 
-	jmp .Lclamp_end // Jump to the end
+	movl %edx, %eax 	/* move 3rd argument register in func call to return value register  */
+	jmp .Lclamp_end 	/* Jump to the end */
 
 .Lclamp_min:
-	movl %esi, %eax // move 2nd argument register in func call to return value register
+	movl %esi, %eax 	/* move 2nd argument register in func call to return value register */
 
 .Lclamp_end:
 	ret
 
+/*
+ * Returns the red component of a pixel color value
+ *
+ * Parameters:
+ *   %edi     - uint32_t color value
+ */
 	.globl get_r
 get_r:
-	movl %edi, %eax		// move 1st argument register in func call to return value register
-	shrl $24, %eax		// shift to the left 24 bits
+	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	shrl $24, %eax		/* shift to the left 24 bits */
 	ret
 
+/*
+ * Returns the green component of a pixel color value
+ *
+ * Parameters:
+ *   %edi     - uint32_t color value
+ */
 	.globl get_g
 get_g:
-	movl %edi, %eax		// move 1st argument register in func call to return value register
-	shrl $16, %eax		// shift to the left 16 bits
+	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	shrl $16, %eax		/* shift to the left 16 bits */
 	ret
 
+/*
+ * Returns the blue component of a pixel color value
+ *
+ * Parameters:
+ *   %edi     - uint32_t color value
+ */
 	.globl get_b
 get_b:
-	movl %edi, %eax		// move 1st argument register in func call to return value register
-	shrl $8, %eax		// shift to the left 8 bits
+	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	shrl $8, %eax		/* shift to the left 8 bits */
 	ret
 
+/*
+ * Returns the alpha component of a pixel color value
+ *
+ * Parameters:
+ *   %edi     - uint32_t color value
+ */
 	.globl get_a
 get_a:
-	movl %edi, %eax		// move 1st argument register in func call to return value register
-	andl $255, %eax		// bitwise the return value with 255
+	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	andl $255, %eax		/* bitwise the return value with 255 */
 	ret
 
-	/* Blends foreground and background color component values using a specified alpha (opacity) value.
-	*
-	* Parameters:
-	*   %edi     - foreground color of pixel
-	*   %esi     - background color of pixel
-	*   %edx     - alpha value of pixel
-	*/
+/* Blends foreground and background color component values using a specified alpha (opacity) value.
+ *
+ * Parameters:
+ *   %edi     - foreground color of pixel
+ *   %esi     - background color of pixel
+ *   %edx     - alpha value of pixel
+ */
 	.globl blend_components
 blend_components:
-	movl $255, %eax // move $255 to return value registrar
-	subl %edx, %eax // subtract %edx from return value registrar
-	imull %esi, %eax // multiply %esi with return value registrar
+	movl $255, %eax 	/* move $255 to return value registrar */
+	subl %edx, %eax 	/* subtract %edx from return value registrar */
+	imull %esi, %eax 	/* multiply %esi with return value registrar */
 
-	movl %edx, %r10d // move %edx to %r10d temp registrar
-	imull %edi, %r10d // multiply %edi with return registrar
+	movl %edx, %r10d 	/* move %edx to %r10d temp registrar */
+	imull %edi, %r10d 	/* multiply %edi with return registrar */
 
-	addl %r10d, %eax // add %r10d temp registrar to %eax
-	movl $255, %r10d // move 255 to %r10d registrar
-	movl $0, %edx // Set edx register to 0 to get ready divide
-
-	div %r10d // divide %eax registrar by %r10d registrar
+	addl %r10d, %eax 	/* add %r10d temp registrar to %eax */
+	movl $255, %r10d 	/* move 255 to %r10d registrar */
+	movl $0, %edx 		/* Set edx register to 0 to get ready divide */
+ 
+	div %r10d 			/* divide %eax registrar by %r10d registrar */
 	ret
 
 	.globl blend_colors
@@ -151,12 +182,25 @@ blend_colors:
 set_pixel:
 	ret
 
+/* Returns the result of squaring an int64_t value.
+ *
+ * Parameters:
+ *   %rdi     - the value to be squared
+ */
 	.globl square
 square:
-	movl %edi, %eax		// move 1st argument register in func call to return value register
-	imull %eax, %eax	// multiply by itself
+	movl %rdi, %rax		/* move 1st argument register in func call to return value register */
+	imull %rax, %rax	/* multiply by itself */
 	ret
 
+/* Returns the sum of the squares of the x and y distance between two points
+ *
+ * Parameters:
+ *   %rdi     - the x value of the first point
+ *   %rsi     - the y value of the first point
+ *   %rdx     - the x value of the second point
+ *   %rcx     - the y value of the second point
+ */
 	.globl square_dist
 square_dist:
 	ret

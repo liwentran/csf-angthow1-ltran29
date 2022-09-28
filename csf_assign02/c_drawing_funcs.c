@@ -16,9 +16,11 @@
 //   x     - x coordinate (pixel column)
 //   y     - y coordinate (pixel row)
 //
+// Returns:
+//           0 if false (not in bound), or 1 if true (in bounds)
 int32_t in_bounds(struct Image *img, int32_t x, int32_t y){
 
-  if(x < 0 || x > img->width || y < 0 || y > img->height){
+  if(x < 0 || x >= img->width || y < 0 || y >= img->height){
     return 0;
   }
   return 1;
@@ -104,7 +106,7 @@ uint8_t blend_components(uint32_t fg, uint32_t bg, uint32_t alpha){
 //   bg     - value of the background pixel
 uint32_t blend_colors(uint32_t fg, uint32_t bg){
   //blend individual compenents red, green, and blue then set opacity to 255
-  return ((blend_components(get_r(fg), get_r(bg), get_a(fg)) << 23) + (blend_components(get_g(fg), get_g(bg), get_a(fg)) << 15) + (blend_components(get_b(fg), get_b(bg), get_a(fg)) << 7)) & 255;
+  return ((blend_components(get_r(fg), get_r(bg), get_a(fg)) << 24) + (blend_components(get_g(fg), get_g(bg), get_a(fg)) << 16) + (blend_components(get_b(fg), get_b(bg), get_a(fg)) << 8)) | 255;
 }
 
 // Draws a single pixel to a destination image, bending the specified foreground color with the elxisting background color,
@@ -190,9 +192,8 @@ void draw_rect(struct Image *img,
 void draw_circle(struct Image *img,
                  int32_t x, int32_t y, int32_t r,
                  uint32_t color) {
-  // TODO: implement
-    for (int x1 = x - r; x1 < x + r; x1++) {
-    for (int y1 = y - r; y1 < y + r; y1++) {
+    for (int x1 = x - r; x1 <= x + r; x1++) {
+    for (int y1 = y - r; y1 <= y + r; y1++) {
       //check if distnace is less than or equal the radius
       if(square_dist(x, y, x1, y1) <= square(r)){
         draw_pixel(img, x1, y1, color);
@@ -220,18 +221,21 @@ void draw_tile(struct Image *img,
                struct Image *tilemap,
                const struct Rect *tile) {
   // tile rectangle is not entirely within the bounds of tilemap, do nothing
-  if (tilemap->width < (tile->x + tile->width) || tilemap->height < (tile->y + tile->height) ) {
+  if (!in_bounds(tilemap, tile->x, tile->y) || !in_bounds(tilemap, tile->x + tile->width-1, tile->y + tile->height-1)) {
     return;
   }
 
   // Then, copy pixel data from tilemap to destination image
 
   // Only set the pixels that are covered by the rectangle. 
-  for (int r = x; r < (x + tile->width); r++) {
-    for (int c = y; y < (c + tile->height); c++) {
+  for (int32_t r = x; r < x + tile->width; r++) {
+     for (int32_t c = y; c < y + tile->height; c++) {
       // check whether in bound, and then set the img's pixel to be the tilemap's pixel
-      if (in_bounds(img, r, c)) {
-        img->data[compute_index(img, r, c)] = tilemap->data[compute_index(img, r, c)];
+      if (in_bounds(img, r, c)){
+        uint32_t img_idx = compute_index(img, r, c);
+        uint32_t tile_idx = compute_index(tilemap, tile->x + (r - x), tile->y + (c - y));
+        
+        img->data[img_idx] = tilemap->data[tile_idx];
       }
     }
   }
@@ -265,9 +269,9 @@ void draw_sprite(struct Image *img,
 
   // Only set the pixels that are covered by the rectangle. 
   for (int r = x; r < (x + sprite->width); r++) {
-    for (int c = y; y < (c + sprite->height); c++) {
+    for (int c = y; c < (y + sprite->height); c++) {
       // check whether in bound, and then set the img's pixel to be the tilemap's pixel
-      draw_pixel(img, r, c, spritemap->data[compute_index(spritemap, r, c)]);
+      draw_pixel(img, r, c, spritemap->data[compute_index(spritemap, r + (-x + sprite->x), c + (-y + sprite->y))]);
     }
   } 
 }

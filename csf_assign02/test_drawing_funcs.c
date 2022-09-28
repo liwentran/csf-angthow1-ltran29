@@ -5,7 +5,7 @@
 #include "image.h"
 #include "drawing_funcs.h"
 #include "tctest.h"
-// TODO: add prototypes for your helper functions
+
 
 // an expected color identified by a (non-zero) character code
 typedef struct {
@@ -76,6 +76,19 @@ void check_picture(struct Image *img, Picture *p) {
   }
 }
 
+//  prototypes for your helper functions
+void test_in_bounds(TestObjs *objs);
+void test_compute_index(TestObjs *objs);
+void test_clamp();
+void test_get_r();
+void test_get_g();
+void test_get_b();
+void test_get_a();
+void test_blend_components();
+void test_blend_colors();
+void test_set_pixel(TestObjs *objs);
+void test_square_dist();
+
 // prototypes of test functions
 void test_draw_pixel(TestObjs *objs);
 void test_draw_rect(TestObjs *objs);
@@ -93,6 +106,17 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   // TODO: add TEST() directives for your helper functions
+  TEST(test_in_bounds);
+  TEST(test_compute_index);
+  TEST(test_clamp);
+  TEST(test_get_r);
+  TEST(test_get_g);
+  TEST(test_get_b);
+  TEST(test_get_a);
+  TEST(test_blend_components);
+  TEST(test_blend_colors);
+  TEST(test_set_pixel);
+  TEST(test_square_dist);
   TEST(test_draw_pixel);
   TEST(test_draw_rect);
   TEST(test_draw_circle);
@@ -101,6 +125,75 @@ int main(int argc, char **argv) {
   TEST(test_draw_sprite);
 
   TEST_FINI();
+}
+
+void test_in_bounds(TestObjs *objs) {
+  ASSERT(in_bounds(&objs->small, SMALL_W/2, SMALL_H/2) == 1);
+  ASSERT(in_bounds(&objs->small, SMALL_W, SMALL_H) == 0);
+  ASSERT(in_bounds(&objs->small, SMALL_W+1, SMALL_H+1) == 0);
+}
+
+void test_compute_index(TestObjs *objs) {
+  ASSERT(compute_index(&objs->small, 0, 0) == 0);
+  ASSERT(compute_index(&objs->small, 4, 3) == 28);
+}
+
+void test_clamp() {
+  ASSERT(clamp(2,0,4) == 2);
+  ASSERT(clamp(6,0,4) == 4);
+  ASSERT(clamp(-2,0,4) == 0);
+}
+
+void test_get_r() {
+  uint32_t color = 0b11111100111000001001011101100110;
+  ASSERT(get_r(color) == 0b11111100);
+}
+
+void test_get_g() {
+  uint32_t color = 0b11111100111000001001011101100110;
+  ASSERT(get_g(color) == 0b11100000);
+}
+
+void test_get_b() {
+  uint32_t color = 0b11111100111000001001011101100110;
+  ASSERT(get_b(color) == 0b10010111);
+}
+
+void test_get_a() {
+  uint32_t color = 0b11111100111000001001011101100110;
+  ASSERT(get_a(color) == 0b01100110);
+}
+
+void test_blend_components() {
+  uint32_t a = 0b01100110; // 102
+  uint32_t fg = 0b10010111; // 151
+  uint32_t bg = 0b11100000; // 224 
+    
+  ASSERT(blend_components(fg, bg, a) == 194);
+}
+
+void test_blend_colors() {
+  uint32_t px1 = 0b01111100111000001001011101100110; // foreground
+  uint32_t px2 = 0b01101101010100001000011111110100;
+  uint32_t res = blend_colors(px1, px2);
+  ASSERT(res == 0b1110011100010011000110111111111);
+}
+
+void test_set_pixel(TestObjs *objs) {
+  // initially objs->small pixels are opaque black
+  ASSERT(objs->small.data[SMALL_IDX(3, 2)] == 0x000000FFU);
+
+  // test drawing completely opaque pixels
+  set_pixel(&objs->small, compute_index(&objs->small, 3, 2), 0xFF0000FF); // opaque red
+  ASSERT(objs->small.data[compute_index(&objs->small, 3, 2)] == 0xFF0000FF);
+
+  // test color blending
+  set_pixel(&objs->small, compute_index(&objs->small, 3, 2), 0x00FF0080); // half-opaque full-intensity green
+  ASSERT(objs->small.data[compute_index(&objs->small, 3, 2)] == 0x7F8000FF);
+}
+
+void test_square_dist() {
+  ASSERT(square_dist(4,6,8,9) == 25);
 }
 
 void test_draw_pixel(TestObjs *objs) {

@@ -1,5 +1,8 @@
 /*
  * Assembly-language implementations of the drawing functions
+ * CSF Assignment 2
+ * Liwen Tran, Anthony Sky Ng-Thow-Hing
+ * ltran29@jhu.edu, angthow1@jhu.edu
  */
 
 /* Offsets of struct Image fields */

@@ -1,3 +1,10 @@
+/*
+ * Testing drawing functions.
+ * CSF Assignment 2
+ * Liwen Tran, Anthony Sky Ng-Thow-Hing
+ * ltran29@jhu.edu, angthow1@jhu.edu
+ */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

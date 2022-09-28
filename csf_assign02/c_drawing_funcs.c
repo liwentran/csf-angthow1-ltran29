@@ -1,3 +1,10 @@
+/*
+ * Functions defining the operations of drawing.
+ * CSF Assignment 2
+ * Liwen Tran, Anthony Sky Ng-Thow-Hing
+ * ltran29@jhu.edu, angthow1@jhu.edu
+ */
+
 // C implementations of drawing functions (and helper functions)
 
 #include <assert.h>

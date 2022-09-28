@@ -23,6 +23,54 @@
 
 /* TODO: implement your helper functions here */
 
+	.globl in_bounds
+in_bounds:
+	ret
+
+	.globl compute_index
+compute_index:
+	ret
+
+	.globl clamp
+clamp:
+	ret
+
+	.globl get_r
+get_r:
+	ret
+
+	.globl get_g
+get_g:
+	ret
+
+	.globl get_b
+get_b:
+	ret
+
+	.globl get_a
+get_a:
+	ret
+
+	.globl blend_components
+blend_components:
+	ret
+
+	.globl blend_colors
+blend_colors:
+	ret
+	
+	.globl set_pixel
+set_pixel:
+	ret
+
+	.globl square
+square:
+	ret
+
+	.globl square_dist
+square_dist:
+	ret
+
 /***********************************************************************
    Public API functions
  ***********************************************************************/

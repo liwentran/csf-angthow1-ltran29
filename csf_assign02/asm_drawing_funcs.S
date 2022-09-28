@@ -23,8 +23,37 @@
 
 /* TODO: implement your helper functions here */
 
+/* Checks x and y coordinates to determine whether they are in bounds in the specified image.
+ *
+ * Parameters:
+ *   %rdi - pointer to Image
+ *   %esi - x coordinate (pixel column)
+ *   %edx - y coordinate (pixel row)
+ */
 	.globl in_bounds
 in_bounds:
+	movl IMAGE_WIDTH_OFFSET(%rdi), %r10d // move pointer value of image width to temporary registrar %r10
+	movl IMAGE_HEIGHT_OFFSET(%rdi), %r11d // move pointer value of image width to temporary registrar %r11
+	
+	cmpl $0, %esi // Compare 0 with esi
+	jl .Lout_of_bounds // jump to Lout_of_bounds if esi is less than 0
+
+	cmpl $0, %edx // Compare 0 with edx
+	jl .Lout_of_bounds // jump to Lout_of_bounds if edx is less than 0
+
+	cmpl %r10d, %esi // Compare r10d with esi
+	jge .Lout_of_bounds // jump to Lout_of_bounds if esi is greater than or equal to r10
+	
+	cmpl %r11d, %edx // Compare r11d with edx
+	jge .Lout_of_bounds // jump to Lout_of_bounds if edx is greater than or equal to r11
+
+	movl $1, %eax // move 1 to eax return registrar
+	jmp .Lin_bounds_end // jump to end
+
+	.Lout_of_bounds:
+	movl $0, %eax //move 0 to eax return registrar
+	
+	.Lin_bounds_end:
 	ret
 
 	.globl compute_index
@@ -41,16 +70,16 @@ clamp:
   	cmpl %esi, %edi // Compare esi and dsi
 	jl .Lclamp_min // jump to Lmin If edi is less than esi
 
-	jmp .L_end // Jump to the end
+	jmp .Lclamp_end // Jump to the end
 
 .Lclamp_max:
 	movl %edx, %eax // move 3rd argument register in func call to return value register 
-	jmp .L_end // Jump to the end
+	jmp .Lclamp_end // Jump to the end
 
 .Lclamp_min:
 	movl %esi, %eax // move 2nd argument register in func call to return value register
 
-.L_end:
+.Lclamp_end:
 	ret
 
 	.globl get_r

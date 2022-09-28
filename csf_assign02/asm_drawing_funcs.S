@@ -181,6 +181,13 @@ blend_components:
 blend_colors:
 	ret
 	
+/* Constrains a value so that it is greater than or equal to min and less than or equal to max.
+ *
+ * Parameters:
+ *   %edi     - pointer to struct Image
+ *   %esi     - index value of the the pixel in the image's data array
+ *   %edx     - value of the color to blend into
+ */
 	.globl set_pixel
 set_pixel:
 	ret

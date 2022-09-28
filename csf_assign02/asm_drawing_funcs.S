@@ -113,6 +113,7 @@ clamp:
 get_r:
 	movl %edi, %eax		/* move 1st argument register in func call to return value register */
 	shrl $24, %eax		/* shift to the left 24 bits */
+	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
 
 /*
@@ -125,6 +126,7 @@ get_r:
 get_g:
 	movl %edi, %eax		/* move 1st argument register in func call to return value register */
 	shrl $16, %eax		/* shift to the left 16 bits */
+	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
 
 /*
@@ -137,6 +139,7 @@ get_g:
 get_b:
 	movl %edi, %eax		/* move 1st argument register in func call to return value register */
 	shrl $8, %eax		/* shift to the left 8 bits */
+	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
 
 /*
@@ -148,7 +151,7 @@ get_b:
 	.globl get_a
 get_a:
 	movl %edi, %eax		/* move 1st argument register in func call to return value register */
-	andl $255, %eax		/* bitwise the return value with 255 */
+	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
 
 /* Blends foreground and background color component values using a specified alpha (opacity) value.

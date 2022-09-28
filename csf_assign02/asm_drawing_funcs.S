@@ -37,26 +37,26 @@ clamp:
 
 	.globl get_r
 get_r:
-	movq %rdi, %rax		// move 1st argument register in func call to return value register
-	shrq $24, %rax		// shift to the left 24 bits
+	movl %edi, %eax		// move 1st argument register in func call to return value register
+	shrl $24, %eax		// shift to the left 24 bits
 	ret
 
 	.globl get_g
 get_g:
-	movq %rdi, %rax		// move 1st argument register in func call to return value register
-	shrq $16, %rax		// shift to the left 16 bits
+	movl %edi, %eax		// move 1st argument register in func call to return value register
+	shrl $16, %eax		// shift to the left 16 bits
 	ret
 
 	.globl get_b
 get_b:
-	movq %rdi, %rax		// move 1st argument register in func call to return value register
-	shrq $8, %rax		// shift to the left 8 bits
+	movl %edi, %eax		// move 1st argument register in func call to return value register
+	shrl $8, %eax		// shift to the left 8 bits
 	ret
 
 	.globl get_a
 get_a:
-	movq %rdi, %rax		// move 1st argument register in func call to return value register
-	and $255, %rax		// bitwise the return value with 255
+	movl %edi, %eax		// move 1st argument register in func call to return value register
+	andl $255, %eax		// bitwise the return value with 255
 	ret
 
 	.globl blend_components
@@ -73,8 +73,8 @@ set_pixel:
 
 	.globl square
 square:
-	movq %rdi, %rax		// move 1st argument register in func call to return value register
-	imulq %rax, %rax	// multiply by itself
+	movl %edi, %eax		// move 1st argument register in func call to return value register
+	imull %eax, %eax	// multiply by itself
 	ret
 
 	.globl square_dist

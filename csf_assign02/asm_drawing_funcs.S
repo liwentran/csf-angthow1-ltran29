@@ -117,8 +117,27 @@ get_a:
 	andl $255, %eax		// bitwise the return value with 255
 	ret
 
+	/* Blends foreground and background color component values using a specified alpha (opacity) value.
+	*
+	* Parameters:
+	*   %edi     - foreground color of pixel
+	*   %esi     - background color of pixel
+	*   %edx     - alpha value of pixel
+	*/
 	.globl blend_components
 blend_components:
+	movl $255, %eax // move $255 to return value registrar
+	subl %edx, %eax // subtract %edx from return value registrar
+	imull %esi, %eax // multiply %esi with return value registrar
+
+	movl %edx, %r10d // move %edx to %r10d temp registrar
+	imull %edi, %r10d // multiply %edi with return registrar
+
+	addl %r10d, %eax // add %r10d temp registrar to %eax
+	movl $255, %r10d // move 255 to %r10d registrar
+	movl $0, %edx // Set edx register to 0 to get ready divide
+
+	div %r10d // divide %eax registrar by %r10d registrar
 	ret
 
 	.globl blend_colors

@@ -27,8 +27,19 @@
 in_bounds:
 	ret
 
+/*
+ * Computes the index of a pixel in an image’s data array given its x and y coordinates
+ *
+ * Parameters:
+ *   %rdi     - pointer to struct Image
+ *   %esi     - x coordinate
+ *   %edx     - y coordinate
+ */
 	.globl compute_index
 compute_index:
+	movl IMAGE_WIDTH_OFFSET(%rdi), %eax		// offset Image to get width and store in return value register
+	imull %edx, %eax						// multiply value by y coordinate
+	addl %esi, %eax							// add x coordinate to return value
 	ret
 
 	.globl clamp

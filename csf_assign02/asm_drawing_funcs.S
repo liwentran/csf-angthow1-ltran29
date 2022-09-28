@@ -33,6 +33,24 @@ compute_index:
 
 	.globl clamp
 clamp:
+	movl %edi, %eax // move 1st argument register in func call to return value register
+
+	cmpl %edx, %edi // Compare edx and edi
+	jg .Lclamp_max // jump to Lmax If edi is greater than edx
+
+  	cmpl %esi, %edi // Compare esi and dsi
+	jl .Lclamp_min // jump to Lmin If edi is less than esi
+
+	jmp .L_end // Jump to the end
+
+.Lclamp_max:
+	movl %edx, %eax // move 3rd argument register in func call to return value register 
+	jmp .L_end // Jump to the end
+
+.Lclamp_min:
+	movl %esi, %eax // move 2nd argument register in func call to return value register
+
+.L_end:
 	ret
 
 	.globl get_r

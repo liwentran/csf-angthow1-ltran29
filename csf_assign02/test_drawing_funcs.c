@@ -88,6 +88,7 @@ void test_blend_components();
 void test_blend_colors();
 void test_set_pixel(TestObjs *objs);
 void test_square_dist();
+void test_square();
 
 // prototypes of test functions
 void test_draw_pixel(TestObjs *objs);
@@ -117,6 +118,7 @@ int main(int argc, char **argv) {
   TEST(test_blend_colors);
   TEST(test_set_pixel);
   TEST(test_square_dist);
+  TEST(test_square);
   TEST(test_draw_pixel);
   TEST(test_draw_rect);
   TEST(test_draw_circle);
@@ -194,6 +196,10 @@ void test_set_pixel(TestObjs *objs) {
 
 void test_square_dist() {
   ASSERT(square_dist(4,6,8,9) == 25);
+}
+
+void test_square() {
+  ASSERT(square(3) == 9);
 }
 
 void test_draw_pixel(TestObjs *objs) {

@@ -37,14 +37,20 @@ clamp:
 
 	.globl get_r
 get_r:
+	movq %rdi, %rax
+	shrq $24, %rax
 	ret
 
 	.globl get_g
 get_g:
+	movq %rdi, %rax
+	shrq $16, %rax
 	ret
 
 	.globl get_b
 get_b:
+	movq %rdi, %rax
+	shrq $8, %rax
 	ret
 
 	.globl get_a

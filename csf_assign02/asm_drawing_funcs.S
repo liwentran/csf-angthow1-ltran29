@@ -211,71 +211,72 @@ set_pixel:
 */
 	.globl blend_colors
 blend_colors:
-	pushq %rbx /* push %rbx callee saved register onto stack */
- 	pushq %r12 /* push %r12 register onto stack */
-	pushq %r13 /* push %r13 register onto stack */
-	pushq %r14 /* push %r14 register onto stack */
-	pushq %r15 /* push %r15 register onto stack */
+	pushq %rbx // Push the callee saved register onto stack
+ 	pushq %r12 // Push r12 register onto stack
+	pushq %r13 // Push r13 register onto stack
+	pushq %r14 // Push r14 register onto stack
+	pushq %r15 // Push r15 register onto stack
+	movl %edi, %r12d // Store the parameter register to r12d
+	movl %esi, %r13d // Store esi register to r13d
 
-	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
-	movl %esi, %r15d /* move the value of background pixel to saved registrar %r15d */
+	call get_a // Call get_a function with edi and esi registers
+	movl %eax, %r14d // Store the result onto r14d
+	movl %r14d, %edx // Move r14d to edx register to be used blend_componenets is called
 
-	call get_a /* call get_a function */
-	movl %eax, %r12d /* move the returned value from get_a to saved registrar %r12d */
+	movl %r12d, %edi // Store r12d to edi register
+	call get_r // Call get_r funciton with edi register
+	movl %eax, %r15d // Store the result onto r15d
 
-	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_r*/
-	call get_r /* call get_r function */
-	movl %eax, %r13d /* move the returned value from get_r to saved registrar %r13d */
+	movl %r13d, %edi // Move r13d value to edi register
+	call get_r // Call get_r funciton with edi register
+	movl %eax, %esi // Store the result onto esi
 
-	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_r call */
-	call get_r /* call get_r function */
-	movl %eax, %esi /* move the returned value from get_r to saved registrar %esi */
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
+	movl %eax, %ebx // Store the result onto ebx register (color)
 
-	movl %r13d, %edi /* move the value of get_r register to %edi to prep for blend_components call*/
-	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
-	call blend_components /* call blend_components */
-	shll $24, %eax  /* Left shift ebx register 24 times */
-	movl %eax, %ebx /* Move the return result to the %ebx saved register */
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
 
+	movl %r12d, %edi // Move r12d to edi register
+	call get_g // Call get_g funciton with edi register
+	movl %eax, %r15d // Store the result in r15d register
 
-	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_g*/
-	call get_g /* call get_g function */
-	movl %eax, %r13d /* move the returned value from get_g to saved registrar %r13d */
+	movl %r13d, %edi // Move r13d to edi register
+	call get_g // Call get_g funciton with edi register
+	movl %eax, %esi // Store the result in esi (second argument)
 
-	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
-	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_g call */
-	call get_g /* call get_g function */
-	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
 
-	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
-	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
-	call blend_components /* call blend_components */
-	shll $16, %eax  /* Left shift ebx register 16 times */
-	addl %eax, %ebx /* Add the return result to the %ebx saved register */
+	orl %eax, %ebx // Add the green color result to the shifted ebx value
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
 
+	movl %r12d, %edi // Move r12d to edi register
+	call get_b // Call get_b funciton with edi register
+	movl %eax, %r15d // Store the result in r15d register
 
-	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_b*/
-	call get_b /* call get_b function */
-	movl %eax, %r13d /* move the returned value from get_b to saved registrar %r13d */
+	movl %r13d, %edi // Move r13d to edi register
+	call get_b // Call get_b funciton with edi register
+	movl %eax, %esi // Store the result in esi (second argument)
 
-	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
-	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_b call */
-	call get_b /* call get_b function */
-	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
 
-	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
-	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
-	call blend_components /* call blend_components */
-	shll $8, %eax  /* Left shift ebx register 8 times */
-	addl %ebx, %eax /* Add the %ebx register to the the return result */
-	orl  $255, %eax	/* or the result with 255 */
+	orl %eax, %ebx // Add the blue color result to the shifted ebx value
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
+	orl $255, %ebx // Set opacitiy to full by adding 255 to the last 8 bits
+	movl %ebx, %eax // Store the result to return register eax
 
-	popq %r15 /* Restore r15  saved register */
-	popq %r14 /* Restore r14  saved register */
-	popq %r13 /* Restore r13  saved register */
-	popq %r12 /* Restore r12  saved register */
-	popq %rbx /* Restore rbx  saved register */
+	popq %r15 // Restore r15 callee saved register
+	popq %r14 // Restore r14 callee saved register
+	popq %r13 // Restore r13 callee saved register
+	popq %r12 // Restore r12 callee saved register
+	popq %rbx // Restore rbx callee saved register
 	ret
+
 	
 /* Returns the result of squaring an int64_t value.
  *
@@ -355,7 +356,6 @@ draw_pixel:
 	call set_pixel /* call set_pixel */
 
 .Ldraw_pixel_end:
-	addq $8, %rsp 		/* Decrement rsp register by 8 to restore the value */
 	popq %r13 /* restore r13 saved register */
 	popq %r12 /* restore r12 saved register */
 	popq %rbx /* restore rbx saved register */

@@ -179,6 +179,70 @@ blend_components:
 
 	.globl blend_colors
 blend_colors:
+	pushq %rbx // Push the callee saved register onto stack
+ 	pushq %r12 // Push r12 register onto stack
+	pushq %r13 // Push r13 register onto stack
+	pushq %r14 // Push r14 register onto stack
+	pushq %r15 // Push r15 register onto stack
+	movl %edi, %r12d // Store the parameter register to r12d
+	movl %esi, %r13d // Store esi register to r13d
+
+	call get_a // Call get_a function with edi and esi registers
+	movl %eax, %r14d // Store the result onto r14d
+	movl %r14d, %edx // Move r14d to edx register to be used blend_componenets is called
+
+	movl %r12d, %edi // Store r12d to edi register
+	call get_r // Call get_r funciton with edi register
+	movl %eax, %r15d // Store the result onto r15d
+
+	movl %r13d, %edi // Move r13d value to edi register
+	call get_r // Call get_r funciton with edi register
+	movl %eax, %esi // Store the result onto esi
+
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
+	movl %eax, %ebx // Store the result onto ebx register (color)
+
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
+
+	movl %r12d, %edi // Move r12d to edi register
+	call get_g // Call get_g funciton with edi register
+	movl %eax, %r15d // Store the result in r15d register
+
+	movl %r13d, %edi // Move r13d to edi register
+	call get_g // Call get_g funciton with edi register
+	movl %eax, %esi // Store the result in esi (second argument)
+
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
+
+	orl %eax, %ebx // Add the green color result to the shifted ebx value
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
+
+	movl %r12d, %edi // Move r12d to edi register
+	call get_b // Call get_b funciton with edi register
+	movl %eax, %r15d // Store the result in r15d register
+
+	movl %r13d, %edi // Move r13d to edi register
+	call get_b // Call get_b funciton with edi register
+	movl %eax, %esi // Store the result in esi (second argument)
+
+	movl %r14d, %edx // Move r14d to edx register again
+	movl %r15d, %edi // Move 15d register to edi to get ready to call blend_components
+	call blend_components // Call blend_components with edi, esi, edx registers
+
+	orl %eax, %ebx // Add the blue color result to the shifted ebx value
+	shll $8, %ebx // Shift ebx register (color) by 8 shifts to the left
+	orl $255, %ebx // Set opacitiy to full by adding 255 to the last 8 bits
+	movl %ebx, %eax // Store the result to return register eax
+
+	popq %r15 // Restore r15 callee saved register
+	popq %r14 // Restore r14 callee saved register
+	popq %r13 // Restore r13 callee saved register
+	popq %r12 // Restore r12 callee saved register
+	popq %rbx // Restore rbx callee saved register
 	ret
 	
 /* Constrains a value so that it is greater than or equal to min and less than or equal to max.
@@ -190,7 +254,23 @@ blend_colors:
  */
 	.globl set_pixel
 set_pixel:
+	pushq %r12		/* push callee save register to store pixel address */
+	pushq %r13		/* push callee save register to store index value */
+	subq $8, %rsp	/* subtract 8 so that rsp is at an address that's a multiple of 32 */
+
+	movl IMAGE_DATA_OFFSET(%edi), %r12d 	/* move pointer to the start of the data array and store in r12*/
+	movl %esi, %r13d 						/* store the index value in r13 */
+
+	movl %edx, %edi 						/* store color in the first argument */
+	movl (%r12d, %r13d, 4), %esi 			/* store the pointer to the pixel (start of data + 4*index) in the second argument */
+	call blend_colors						/* call blend_colors with the color and pointer */
+	movl %eax, (%r12d, %r13d, 4)			/* move the result of blend_colors to the pixel (start of data + 4*index) */
+
+	addq $8, %rsp 	/* Decrement rsp register by 8 to restore the value */
+	popq %r12		/* restore r12 */		
+	popq %r13		/* restore r13 */
 	ret
+	
 
 /* Returns the result of squaring an int64_t value.
  *
@@ -213,16 +293,22 @@ square:
  */
 	.globl square_dist
 square_dist:
+	pushq %r12			/* push r12 onto the stack to push the x2-x1 vaule */
+	subq $8, %rsp		/* subtract 8 so that rsp is at an address that's a multiple of 32 */
+
 	subq %rdx, %rdi		/* subtract x2 from x1 */
 	call square			/* call square function with rdi = x2 - x1*/
-	movq %rax, %r10	/* store result in temp registrar */
+	movq %rax, %r12		/* store result in r12 */
 
 	subq %rcx, %rsi		/* subtract y2 from y1 */
 	movq %rsi, %rdi		/* move y2-y1 to rdi */
 	call square			/* call square function with rdi = y2 - y1 */
-	addq %rax, %r10	/* add the result to the temporary register  */
+	addq %rax, %r12		/* add the result to the temporary register  */
 
-	movq %r10, %rax	/* move the result to the return value register */
+	movq %r12, %rax		/* move the result to the return value register */
+	
+	addq $8, %rsp 		/* Decrement rsp register by 8 to restore the value */
+	popq %r12; 			/* restore r12 */
 	
 	ret
 

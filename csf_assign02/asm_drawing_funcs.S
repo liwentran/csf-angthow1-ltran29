@@ -176,8 +176,32 @@ blend_components:
  
 	div %r10d 			/* divide %eax registrar by %r10d registrar */
 	ret
+	
+/* Constrains a value so that it is greater than or equal to min and less than or equal to max.
+ *
+ * Parameters:
+ *   %edi     - pointer to struct Image
+ *   %esi     - index value of the the pixel in the image's data array
+ *   %edx     - value of the color to blend into
+ */
+	.globl set_pixel
+set_pixel:
+	pushq %r12		/* push callee save register to store pixel address */
+	pushq %r13		/* push callee save register to store index value */
+	subq $8, %rsp	/* subtract 8 so that rsp is at an address that's a multiple of 32 */
 
-	.globl blend_colors
+	movl IMAGE_DATA_OFFSET(%edi), %r12d 	/* move pointer to the start of the data array and store in r12*/
+	movl %esi, %r13d 						/* store the index value in r13 */
+
+	movl %edx, %edi 						/* store color in the first argument */
+	movl (%r12d, %r13d, 4), %esi 			/* store the pointer to the pixel (start of data + 4*index) in the second argument */
+	call blend_colors						/* call blend_colors with the color and pointer */
+	movl %eax, (%r12d, %r13d, 4)			/* move the result of blend_colors to the pixel (start of data + 4*index) */
+
+	addq $8, %rsp 	/* Decrement rsp register by 8 to restore the value */
+	popq %r12		/* restore r12 */		
+	popq %r13		/* restore r13 */
+	ret
 
 /** Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color
 *
@@ -185,6 +209,7 @@ blend_components:
 *   %edi     - value of the foreground pixel
 *   %esi     - value of the background pixel
 */
+	.globl blend_colors
 blend_colors:
 	pushq %rbx /* push %rbx callee saved register onto stack */
  	pushq %r12 /* push %r12 register onto stack */
@@ -252,10 +277,6 @@ blend_colors:
 	popq %rbx /* Restore rbx  saved register */
 	ret
 	
-	.globl set_pixel
-set_pixel:
-	ret
-
 /* Returns the result of squaring an int64_t value.
  *
  * Parameters:
@@ -277,16 +298,22 @@ square:
  */
 	.globl square_dist
 square_dist:
+	pushq %r12			/* push r12 onto the stack to push the x2-x1 vaule */
+	subq $8, %rsp		/* subtract 8 so that rsp is at an address that's a multiple of 32 */
+
 	subq %rdx, %rdi		/* subtract x2 from x1 */
 	call square			/* call square function with rdi = x2 - x1*/
-	movq %rax, %r10	/* store result in temp registrar */
+	movq %rax, %r12		/* store result in r12 */
 
 	subq %rcx, %rsi		/* subtract y2 from y1 */
 	movq %rsi, %rdi		/* move y2-y1 to rdi */
 	call square			/* call square function with rdi = y2 - y1 */
-	addq %rax, %r10	/* add the result to the temporary register  */
+	addq %rax, %r12		/* add the result to the temporary register  */
 
-	movq %r10, %rax	/* move the result to the return value register */
+	movq %r12, %rax		/* move the result to the return value register */
+	
+	addq $8, %rsp 		/* Decrement rsp register by 8 to restore the value */
+	popq %r12; 			/* restore r12 */
 	
 	ret
 

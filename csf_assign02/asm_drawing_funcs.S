@@ -332,48 +332,34 @@ square_dist:
  */
 	.globl draw_pixel
 draw_pixel:
-.LFB18:
-	.cfi_startproc
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	subq	$24, %rsp
-	movq	%rdi, -8(%rbp)
-	movl	%esi, -12(%rbp)
-	movl	%edx, -16(%rbp)
-	movl	%ecx, -20(%rbp)
-	movl	-16(%rbp), %edx
-	movl	-12(%rbp), %ecx
-	movq	-8(%rbp), %rax
-	movl	%ecx, %esi
-	movq	%rax, %rdi
-	call	in_bounds
-	testl	%eax, %eax
-	je	.L30
-	movl	-16(%rbp), %edx
-	movl	-12(%rbp), %ecx
-	movq	-8(%rbp), %rax
-	movl	%ecx, %esi
-	movq	%rax, %rdi
-	call	compute_index
-	movl	%eax, %ecx
-	movl	-20(%rbp), %edx
-	movq	-8(%rbp), %rax
-	movl	%ecx, %esi
-	movq	%rax, %rdi
-	call	set_pixel
-.L30:
-	nop
-	leave
-	.cfi_def_cfa 7, 8
+	pushq %rbx /* push %rbx callee saved register onto stack */
+	pushq %r12 /* push %r12 callee saved register onto stack*/
+	pushq %r13 /* push %r13 callee saved register onto stack*/
+
+	movq %rdi, %rbx /* move the rdi value containing the pointer to struct image to rbx register */
+	movl %esi, %r12d /* move the esi value containing the x coordinate to r12d register */
+	movl %edx, %r13d /* move the edx value containing the x coordinate to r13d register */
+
+	call in_bounds /* call in_bounds*/
+	cmpl $1, %eax /* Compare to see if eax is less than 1 to see if its out of bounds*/
+	jl .Ldraw_pixel_end /* If the pixel is out of bounds, jump to the end */
+
+	movq %rbx, %rdi /* move the rbx value containing the pointer to struct image back to rdi register*/
+	movl %r12d, %esi /* move the r12d value containing the x coordinate back to esi register*/
+	movl %r13d, %edx /* move the r13d value containing the y coordinate back to edx register*/
+	call compute_index /* call compute index */
+
+	movl %eax, %esi /*  move the result of compute index to the esi register to prep for set_pixel call */
+	movl %ecx, %edx /*  move the color value stored at ecx to the edx register to prep for set_pixel call */
+	movq %rbx, %rdi /* move the rbx value containing the pointer to struct image back to rdi register*/
+	call set_pixel /* call set_pixel */
+
+.Ldraw_pixel_end:
+	popq %r13 /* restore r13 saved register */
+	popq %r12 /* restore r12 saved register */
+	popq %rbx /* restore rbx saved register */
+
 	ret
-	.cfi_endproc
-.LFE18:
-	.size	draw_pixel, .-draw_pixel
-	.globl	draw_rect
-	.type	draw_rect, @function
 
 
 /*

@@ -211,88 +211,71 @@ set_pixel:
 */
 	.globl blend_colors
 blend_colors:
-.LFB14:
-	.cfi_startproc
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	pushq	%r13
-	pushq	%r12
-	pushq	%rbx
-	subq	$8, %rsp
-	.cfi_offset 13, -24
-	.cfi_offset 12, -32
-	.cfi_offset 3, -40
-	movl	%edi, -28(%rbp)
-	movl	%esi, -32(%rbp)
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_a
-	movzbl	%al, %r12d
-	movl	-32(%rbp), %eax
-	movl	%eax, %edi
-	call	get_r
-	movzbl	%al, %ebx
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_r
-	movzbl	%al, %eax
-	movl	%r12d, %edx
-	movl	%ebx, %esi
-	movl	%eax, %edi
-	call	blend_components
-	movzbl	%al, %eax
-	sall	$24, %eax
-	movl	%eax, %r13d
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_a
-	movzbl	%al, %r12d
-	movl	-32(%rbp), %eax
-	movl	%eax, %edi
-	call	get_g
-	movzbl	%al, %ebx
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_g
-	movzbl	%al, %eax
-	movl	%r12d, %edx
-	movl	%ebx, %esi
-	movl	%eax, %edi
-	call	blend_components
-	movzbl	%al, %eax
-	sall	$16, %eax
-	addl	%eax, %r13d
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_a
-	movzbl	%al, %r12d
-	movl	-32(%rbp), %eax
-	movl	%eax, %edi
-	call	get_b
-	movzbl	%al, %ebx
-	movl	-28(%rbp), %eax
-	movl	%eax, %edi
-	call	get_b
-	movzbl	%al, %eax
-	movl	%r12d, %edx
-	movl	%ebx, %esi
-	movl	%eax, %edi
-	call	blend_components
-	movzbl	%al, %eax
-	sall	$8, %eax
-	addl	%r13d, %eax
-	orb	$-1, %al
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r12
-	popq	%r13
-	popq	%rbp
-	.cfi_def_cfa 7, 8
+	pushq %rbx /* push %rbx callee saved register onto stack */
+ 	pushq %r12 /* push %r12 register onto stack */
+	pushq %r13 /* push %r13 register onto stack */
+	pushq %r14 /* push %r14 register onto stack */
+	pushq %r15 /* push %r15 register onto stack */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %esi, %r15d /* move the value of background pixel to saved registrar %r15d */
+
+	call get_a /* call get_a function */
+	movl %eax, %r12d /* move the returned value from get_a to saved registrar %r12d */
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_r*/
+	call get_r /* call get_r function */
+	movl %eax, %r13d /* move the returned value from get_r to saved registrar %r13d */
+
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_r call */
+	call get_r /* call get_r function */
+	movl %eax, %esi /* move the returned value from get_r to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of get_r register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $24, %eax  /* Left shift ebx register 24 times */
+	movl %eax, %ebx /* Move the return result to the %ebx saved register */
+
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_g*/
+	call get_g /* call get_g function */
+	movl %eax, %r13d /* move the returned value from get_g to saved registrar %r13d */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_g call */
+	call get_g /* call get_g function */
+	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $16, %eax  /* Left shift ebx register 16 times */
+	addl %eax, %ebx /* Add the return result to the %ebx saved register */
+
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_b*/
+	call get_b /* call get_b function */
+	movl %eax, %r13d /* move the returned value from get_b to saved registrar %r13d */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_b call */
+	call get_b /* call get_b function */
+	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $8, %eax  /* Left shift ebx register 8 times */
+	addl %ebx, %eax /* Add the %ebx register to the the return result */
+	orl  $255, %eax	/* or the result with 255 */
+
+	popq %r15 /* Restore r15  saved register */
+	popq %r14 /* Restore r14  saved register */
+	popq %r13 /* Restore r13  saved register */
+	popq %r12 /* Restore r12  saved register */
+	popq %rbx /* Restore rbx  saved register */
 	ret
-	.cfi_endproc
 	
 /* Returns the result of squaring an int64_t value.
  *
@@ -349,34 +332,48 @@ square_dist:
  */
 	.globl draw_pixel
 draw_pixel:
-	pushq %rbx /* push %rbx callee saved register onto stack */
-	pushq %r12 /* push %r12 callee saved register onto stack*/
-	pushq %r13 /* push %r13 callee saved register onto stack*/
-
-	movq %rdi, %rbx /* move the rdi value containing the pointer to struct image to rbx register */
-	movl %esi, %r12d /* move the esi value containing the x coordinate to r12d register */
-	movl %edx, %r13d /* move the edx value containing the x coordinate to r13d register */
-
-	call in_bounds /* call in_bounds*/
-	cmpl $1, %eax /* Compare to see if eax is less than 1 to see if its out of bounds*/
-	jg .Ldraw_pixel_end /* If the pixel is out of bounds, jump to the end */
-
-	movq %rbx, %rdi /* move the rbx value containing the pointer to struct image back to rdi register*/
-	movl %r12d, %esi /* move the r12d value containing the x coordinate back to esi register*/
-	movl %r13d, %edx /* move the r13d value containing the y coordinate back to edx register*/
-	call compute_index /* call compute index */
-
-	movl %eax, %esi /*  move the result of compute index to the esi register to prep for set_pixel call */
-	movl %ecx, %edx /*  move the color value stored at ecx to the edx register to prep for set_pixel call */
-	movq %rbx, %rdi /* move the rbx value containing the pointer to struct image back to rdi register*/
-	call set_pixel /* call set_pixel */
-
-.Ldraw_pixel_end:
-	popq %r13 /* restore r13 saved register */
-	popq %r12 /* restore r12 saved register */
-	popq %rbx /* restore rbx saved register */
-
+.LFB18:
+	.cfi_startproc
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$24, %rsp
+	movq	%rdi, -8(%rbp)
+	movl	%esi, -12(%rbp)
+	movl	%edx, -16(%rbp)
+	movl	%ecx, -20(%rbp)
+	movl	-16(%rbp), %edx
+	movl	-12(%rbp), %ecx
+	movq	-8(%rbp), %rax
+	movl	%ecx, %esi
+	movq	%rax, %rdi
+	call	in_bounds
+	testl	%eax, %eax
+	je	.L30
+	movl	-16(%rbp), %edx
+	movl	-12(%rbp), %ecx
+	movq	-8(%rbp), %rax
+	movl	%ecx, %esi
+	movq	%rax, %rdi
+	call	compute_index
+	movl	%eax, %ecx
+	movl	-20(%rbp), %edx
+	movq	-8(%rbp), %rax
+	movl	%ecx, %esi
+	movq	%rax, %rdi
+	call	set_pixel
+.L30:
+	nop
+	leave
+	.cfi_def_cfa 7, 8
 	ret
+	.cfi_endproc
+.LFE18:
+	.size	draw_pixel, .-draw_pixel
+	.globl	draw_rect
+	.type	draw_rect, @function
 
 
 /*

@@ -178,7 +178,78 @@ blend_components:
 	ret
 
 	.globl blend_colors
+
+/** Blends foreground and background colors using the foreground color’s alpha value to produce an opaque color
+*
+* Parameters:
+*   %edi     - value of the foreground pixel
+*   %esi     - value of the background pixel
+*/
 blend_colors:
+	pushq %rbx /* push %rbx callee saved register onto stack */
+ 	pushq %r12 /* push %r12 register onto stack */
+	pushq %r13 /* push %r13 register onto stack */
+	pushq %r14 /* push %r14 register onto stack */
+	pushq %r15 /* push %r15 register onto stack */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %esi, %r15d /* move the value of background pixel to saved registrar %r15d */
+
+	call get_a /* call get_a function */
+	movl %eax, %r12d /* move the returned value from get_a to saved registrar %r12d */
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_r*/
+	call get_r /* call get_r function */
+	movl %eax, %r13d /* move the returned value from get_r to saved registrar %r13d */
+
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_r call */
+	call get_r /* call get_r function */
+	movl %eax, %esi /* move the returned value from get_r to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of get_r register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $24, %eax  /* Left shift ebx register 24 times */
+	movl %eax, %ebx /* Move the return result to the %ebx saved register */
+
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_g*/
+	call get_g /* call get_g function */
+	movl %eax, %r13d /* move the returned value from get_g to saved registrar %r13d */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_g call */
+	call get_g /* call get_g function */
+	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $16, %eax  /* Left shift ebx register 16 times */
+	addl %eax, %ebx /* Add the return result to the %ebx saved register */
+
+
+	movl %r14d, %edi /* move the value of foreground pixel to %edi for get_b*/
+	call get_b /* call get_b function */
+	movl %eax, %r13d /* move the returned value from get_b to saved registrar %r13d */
+
+	movl %edi, %r14d /* move the value of foreground pixel to saved registrar %r14d */
+	movl %r15d, %edi /* move the value of the background pixel to %edi to set up get_b call */
+	call get_b /* call get_b function */
+	movl %eax, %esi /* move the returned value from get_g to saved registrar %esi */
+
+	movl %r13d, %edi /* move the value of foreground pixel register to %edi to prep for blend_components call*/
+	movl %r12d, %edx /* move the value of get_a call pixel to %edi to prep for blend_components call*/
+	call blend_components /* call blend_components */
+	shll $8, %eax  /* Left shift ebx register 8 times */
+	addl %ebx, %eax /* Add the %ebx register to the the return result */
+	orl  $255, %eax	/* or the result with 255 */
+
+	popq %r15 /* Restore r15  saved register */
+	popq %r14 /* Restore r14  saved register */
+	popq %r13 /* Restore r13  saved register */
+	popq %r12 /* Restore r12  saved register */
+	popq %rbx /* Restore rbx  saved register */
 	ret
 	
 	.globl set_pixel

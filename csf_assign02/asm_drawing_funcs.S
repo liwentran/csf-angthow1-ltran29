@@ -190,13 +190,13 @@ set_pixel:
 	pushq %r13		/* push callee save register to store index value */
 	subq $8, %rsp	/* subtract 8 so that rsp is at an address that's a multiple of 32 */
 
-	movl IMAGE_DATA_OFFSET(%edi), %r12d 	/* move pointer to the start of the data array and store in r12*/
+	movq IMAGE_DATA_OFFSET(%rdi), %r12 	/* move pointer to the start of the data array and store in r12*/
 	movl %esi, %r13d 						/* store the index value in r13 */
 
-	movl %edx, %edi 						/* store color in the first argument */
-	movl (%r12d, %r13d, 4), %esi 			/* store the pointer to the pixel (start of data + 4*index) in the second argument */
-	call blend_colors						/* call blend_colors with the color and pointer */
-	movl %eax, (%r12d, %r13d, 4)			/* move the result of blend_colors to the pixel (start of data + 4*index) */
+	movl %edx, %edi 					/* store color in the first argument */
+	movl (%r12, %r13, 4), %esi 			/* store the pointer to the pixel (start of data + 4*index) in the second argument */
+	call blend_colors					/* call blend_colors with the color and pointer */
+	movl %eax, (%r12, %r13, 4)			/* move the result of blend_colors to the pixel (start of data + 4*index) */
 
 	addq $8, %rsp 	/* Decrement rsp register by 8 to restore the value */
 	popq %r12		/* restore r12 */		
@@ -355,6 +355,7 @@ draw_pixel:
 	call set_pixel /* call set_pixel */
 
 .Ldraw_pixel_end:
+	addq $8, %rsp 		/* Decrement rsp register by 8 to restore the value */
 	popq %r13 /* restore r13 saved register */
 	popq %r12 /* restore r12 saved register */
 	popq %rbx /* restore rbx saved register */

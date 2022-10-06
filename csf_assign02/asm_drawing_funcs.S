@@ -36,19 +36,19 @@
 	.globl in_bounds
 in_bounds:
 	movl IMAGE_WIDTH_OFFSET(%rdi), %r10d	/* move pointer value of image width to temporary registrar %r10 */
-	movl IMAGE_HEIGHT_OFFSET(%rdi), %r11d	/* move pointer value of image width to temporary registrar %r11 */
+	movl IMAGE_HEIGHT_OFFSET(%rdi), %r11d	/* move pointer value of image height to temporary registrar %r11 */
 	
-	cmpl $0, %esi		/* Compare 0 with esi */
-	jl .Lout_of_bounds	/* jump to Lout_of_bounds if esi is less than 0  */
+	cmpl $0, %esi		/* Compare 0 with x coordinate */
+	jl .Lout_of_bounds	/* jump to Lout_of_bounds if x coordinate is less than 0  */
 
-	cmpl $0, %edx		/* Compare 0 with edx */
-	jl .Lout_of_bounds 	/* jump to Lout_of_bounds if edx is less than 0  */
+	cmpl $0, %edx		/* Compare 0 with y coordinate */
+	jl .Lout_of_bounds 	/* jump to Lout_of_bounds if y coordinate is less than 0  */
 
-	cmpl %r10d, %esi 	/* Compare r10d with esi */
-	jge .Lout_of_bounds	/* jump to Lout_of_bounds if esi is greater than or equal to r10 */
+	cmpl %r10d, %esi 	/* Compare pointer value with x coordinate */
+	jge .Lout_of_bounds	/* jump to Lout_of_bounds if y is greater than or equal to pointer value of image width */
 	
-	cmpl %r11d, %edx 	/* Compare r11d with edx */
-	jge .Lout_of_bounds /* jump to Lout_of_bounds if edx is greater than or equal to r11 */
+	cmpl %r11d, %edx 	/* Compare pointer value of image height with y coordinate */
+	jge .Lout_of_bounds /* jump to Lout_of_bounds if y is greater than or equal to pointer value of image height */
 
 	movl $1, %eax 		/* move 1 to eax return registrar */
 	jmp .Lin_bounds_end /* jump to end */
@@ -83,22 +83,22 @@ compute_index:
  */
 	.globl clamp
 clamp:
-	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	movl %edi, %eax		/* move pointer to struct image in func call to return value register */
 
-	cmpl %edx, %edi		/* Compare edx and edi */
-	jg .Lclamp_max		/* jump to Lmax If edi is greater than edx */
+	cmpl %edx, %edi		/* Compare maximum value and value at pointer to struct image */
+	jg .Lclamp_max		/* jump to Lmax if value at pointer is greater */
 
   	cmpl %esi, %edi 	/* Compare esi and dsi */
-	jl .Lclamp_min 		/* jump to Lmin If edi is less than esi */
+	jl .Lclamp_min 		/* jump to Lmin If value at pointer is smaller */
 
 	jmp .Lclamp_end 	/* Jump to the end */
 
 .Lclamp_max:
-	movl %edx, %eax 	/* move 3rd argument register in func call to return value register  */
+	movl %edx, %eax 	/* move max value to return value register  */
 	jmp .Lclamp_end 	/* Jump to the end */
 
 .Lclamp_min:
-	movl %esi, %eax 	/* move 2nd argument register in func call to return value register */
+	movl %esi, %eax 	/* move min value to return value register */
 
 .Lclamp_end:
 	ret
@@ -111,7 +111,7 @@ clamp:
  */
 	.globl get_r
 get_r:
-	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	movl %edi, %eax		/* move color value in func call to return value register */
 	shrl $24, %eax		/* shift to the left 24 bits */
 	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
@@ -124,7 +124,7 @@ get_r:
  */
 	.globl get_g
 get_g:
-	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	movl %edi, %eax		/* move color value in func call to return value register */
 	shrl $16, %eax		/* shift to the left 16 bits */
 	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
@@ -137,7 +137,7 @@ get_g:
  */
 	.globl get_b
 get_b:
-	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	movl %edi, %eax		/* move color value in func call to return value register */
 	shrl $8, %eax		/* shift to the left 8 bits */
 	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
@@ -150,7 +150,7 @@ get_b:
  */
 	.globl get_a
 get_a:
-	movl %edi, %eax		/* move 1st argument register in func call to return value register */
+	movl %edi, %eax		/* move color value in func call to return value register */
 	andl $255, %eax		/* bitwise and the return value with 255 */
 	ret
 
@@ -164,14 +164,14 @@ get_a:
 	.globl blend_components
 blend_components:
 	movl $255, %eax 	/* move $255 to return value registrar */
-	subl %edx, %eax 	/* subtract %edx from return value registrar */
-	imull %esi, %eax 	/* multiply %esi with return value registrar */
+	subl %edx, %eax 	/* subtract the alpha value of the pixel from $255 */
+	imull %esi, %eax 	/* multiply foreground color value with return value registrar */
 
-	movl %edx, %r10d 	/* move %edx to %r10d temp registrar */
-	imull %edi, %r10d 	/* multiply %edi with return registrar */
+	movl %edx, %r10d 	/* move alpha value of pixel to %r10d temp registrar */
+	imull %edi, %r10d 	/* multiply value of forground color of pixel with temp registrar */
 
-	addl %r10d, %eax 	/* add %r10d temp registrar to %eax */
-	movl $255, %r10d 	/* move 255 to %r10d registrar */
+	addl %r10d, %eax 	/* add %r10d temp registrar to return registrar*/
+	movl $255, %r10d 	/* move 255 to %r10d temp registrar */
 	movl $0, %edx 		/* Set edx register to 0 to get ready divide */
  
 	div %r10d 			/* divide %eax registrar by %r10d registrar */
@@ -342,7 +342,7 @@ draw_pixel:
 
 	call in_bounds /* call in_bounds*/
 	cmpl $1, %eax /* Compare to see if eax is less than 1 to see if its out of bounds*/
-	jg .Ldraw_pixel_end /* If the pixel is out of bounds, jump to the end */
+	jl .Ldraw_pixel_end /* If the pixel is out of bounds, jump to the end */
 
 	movq %rbx, %rdi /* move the rbx value containing the pointer to struct image back to rdi register*/
 	movl %r12d, %esi /* move the r12d value containing the x coordinate back to esi register*/
@@ -355,7 +355,6 @@ draw_pixel:
 	call set_pixel /* call set_pixel */
 
 .Ldraw_pixel_end:
-	addq $8, %rsp 		/* Decrement rsp register by 8 to restore the value */
 	popq %r13 /* restore r13 saved register */
 	popq %r12 /* restore r12 saved register */
 	popq %rbx /* restore rbx saved register */

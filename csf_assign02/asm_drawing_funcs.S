@@ -467,9 +467,79 @@ draw_rect:
  *   %ecx     - radius of circle
  *   %r8d     - uint32_t color value
  */
-	.globl draw_circle
+ 	.globl draw_circle
 draw_circle:
-	/* TODO: implement */
+	pushq %rbp /* store what ever address rbp is */
+	pushq %rbx /* push %rbx callee saved register onto stack */
+	pushq %r12 /* push %r12 callee saved register onto stack */
+	pushq %r13 /* push %r13 callee saved register onto stack */
+	pushq %r14 /* push %r14 callee saved register onto stack */
+	pushq %r15 /* push %r15 callee saved register onto stack */
+
+	subq $8, %rsp /* Align stack pointer*/
+	movq %rsp, %rbp /* point %rbp to alloc'ed buf */
+
+	movq %rdi, %rbx /* move pointer to struct Image to the callee saved rbx register */
+	movl %esi, %r12d /* move the x coordinate of the circle's center to the callee saved r12 register */
+	movl %edx, %r13d  /* move the y coordinate of the circle's center to the callee saved r13 register */
+	
+	movl %esi, %r14d  /* move the x coordinate of the circle to the callee saved r14 register */
+	subl %ecx, %r14d /* store x-r in r14 register */
+	
+	movl %r12d, 0(%rbp)
+	addl %ecx, 0(%rbp) /* Store x+r in rbp at position 0 */
+	
+	movl %edx, 4(%rbp) 
+	subl %ecx, 4(%rbp) /* Store y-r in rbp at position 4 */
+	
+	movl %r13d, 8(%rbp) 
+	addl %ecx, 8(%rbp) /* Store y+r in rbp at position 8 */
+	
+	movl %ecx, 12(%rbp) /* Move r in rbp at position 12 */
+	movl %r8d, 16(%rbp) /* Save color in rbp at position 16 */
+
+	movl 12(%rbp), %edi /* move radius to %edi to prepare for square call*/
+	call square /* call square with the %edi register */
+	movq %rax, 20(%rbp) /* Move the result of square to callee saved rbp position 20 */
+
+.Lcircle_outer_loop:
+	movl 4(%rbp), %r15d /*reset y - r loop counter initial value*/
+	cmpl 0(%rbp), %r14d /* check if x - r > x + r */
+	jg .Lcircle_outer_end  /* If so, jump to end */
+
+.Lcircle_inner_loop:
+	cmpl 8(%rbp), %r15d /* check if y - r loop counter > y + r */
+	jg .Lcircle_inner_end /* if so, inner loop is done*/
+	movl %r12d, %edi /* Move x to edi register */
+	movl %r13d, %esi /* Move y to esi register */
+	movl %r14d, %edx /* Move x - r to edx register */
+	movl %r15d, %ecx /* Move y - r loop counter to ecx register */
+	call square_dist /* Call square_dist */
+	cmp 20(%rbp), %rax /* check if square_dist result is greater than square */
+	jg .Lcircle_inner_continue /* if so, jump to end of inner loop */
+
+	movq %rbx, %rdi /* move pointer to struct image to rdi to prepare for draw_pixel call */
+	movl %r14d, %esi /* move x - r to esi to prepare for draw_pixel */
+	movl %r15d, %edx /* move y - r loop counter to edx to prepare for draw_pixel */
+	movl 16(%rbp), %ecx /* move color value to ecx to prepare for draw_pixel */
+	call draw_pixel /* call draw pixel */
+
+.Lcircle_inner_continue:
+	incl %r15d /* increment y - r loop counter */
+	jmp .Lcircle_inner_loop /*jump back to start of inner loop */
+
+.Lcircle_inner_end:
+	incl %r14d  /* increment x - r loop counter */
+	jmp .Lcircle_outer_loop /* jump back to start of outer loop */
+
+.Lcircle_outer_end:
+	addq $8, %rsp 	/* Restore stack pointer */
+	popq %r15 /* Restore the r15 register */
+	popq %r14 /* Restore the r14 register */
+	popq %r13 /* Restore the r13 register */
+	popq %r12 /* Restore the r12 register */
+	popq %rbx /* Restore the rbx register */
+	popq %rbp /* Restore rbp register */
 	ret
 
 /*

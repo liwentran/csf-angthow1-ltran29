@@ -411,11 +411,11 @@ draw_rect:
 	/* rect->x + rect->width */
 	movl RECT_X_OFFSET(%r12), %r10d /* store rect->x on stack */
 	addl RECT_WIDTH_OFFSET(%r12), %r10d /* add rect->width to the value on stack */
-	movl %r10d, 0(%ebp) /* add rect->width to the value on stack */
+	movl %r10d, 0(%rbp) /* add rect->width to the value on stack */
 	/* rect->y + rect->height */
 	movl RECT_Y_OFFSET(%r12), %r10d /* store rect->y on stack */
 	addl RECT_HEIGHT_OFFSET(%r12), %r10d /* add rect->height to the value on stack */	
-	movl %r10d, 4(%ebp) /* add rect->height to the value on stack */	
+	movl %r10d, 4(%rbp) /* add rect->height to the value on stack */	
 
 /* top of outter loop */
 .Lrect_x_top:
@@ -424,7 +424,7 @@ draw_rect:
 	jge .Lrect_x_end
 
 .Lrect_y_top:
-	cmp 0(%rbp), %r15d /* if y is >= max y value, jump to very end */
+	cmp 4(%rbp), %r15d /* if y is >= max y value, jump to very end */
 	jge .Lrect_y_end
 
 	/* call draw pixel after moving arguments */

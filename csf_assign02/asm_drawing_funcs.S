@@ -375,7 +375,86 @@ draw_pixel:
  */
 	.globl draw_rect
 draw_rect:
-	/* TODO: implement */
+   /* Callee stored pointers: 
+	* %rbp	- allocated buffer pointer
+	* %rbx	- pointer to struct Image
+	* %r12	- pointer to struct Rect
+	* %r13d	- uint32_t color value
+	* %r14d	- x int32_t iterator value
+	* %r15d	- y int32_t iterator value
+	*
+	* Stack Alocated
+	* 0(%rbp)	- stores max x value (rect->x + rect->width)
+	* 4(%rbp)	- stores max y value (rect->y + rect->height)
+	*/
+
+
+	/* Saving callee values */
+	pushq %rbp /* store what ever address rbp is */
+	pushq %rbx
+	pushq %r12
+	pushq %r13
+	pushq %r14
+	pushq %r15
+
+	subq $8, %rsp /* allocating 8 bytes */
+	movq %rsp, %rbp /* point %rbp to alloc'ed buf */
+
+	/* store arguments */
+	movq %rdi, %rbx /* store Image pointer */
+	movq %rsi, %r12 /* store Rect pointer */
+	movl %edx, %r13d /* store color value */
+	
+	/* iterator value */ 
+	movl RECT_X_OFFSET(%r12), %r14d /* x should initialize to rect->x */
+
+	/* calculate limits */
+	/* rect->x + rect->width */
+	movl RECT_X_OFFSET(%r12), %r10d /* store rect->x on stack */
+	addl RECT_WIDTH_OFFSET(%r12), %r10d /* add rect->width to the value on stack */
+	movl %r10d, 0(%ebp) /* add rect->width to the value on stack */
+	/* rect->y + rect->height */
+	movl RECT_Y_OFFSET(%r12), %r10d /* store rect->y on stack */
+	addl RECT_HEIGHT_OFFSET(%r12), %r10d /* add rect->height to the value on stack */	
+	movl %r10d, 4(%ebp) /* add rect->height to the value on stack */	
+
+/* top of outter loop */
+.Lrect_x_top:
+	movl RECT_Y_OFFSET(%r12), %r15d /* y should initialize to rect->y*/
+	cmp 0(%rbp), %r14d /* if x is >= max x value, jump to very end */
+	jge .Lrect_x_end
+
+.Lrect_y_top:
+	cmp 0(%rbp), %r15d /* if y is >= max y value, jump to very end */
+	jge .Lrect_y_end
+
+	/* call draw pixel after moving arguments */
+	movq %rbx, %rdi
+	movl %r14d, %esi
+	movl %r15d, %edx
+	movl %r13d, %ecx 
+	call draw_pixel
+
+	inc %r15d
+	jmp .Lrect_y_top
+
+
+.Lrect_y_end:
+	inc %r14d
+	jmp .Lrect_x_top
+
+
+.Lrect_x_end:
+
+	addq $8, %rsp /* restore stack pointer */
+
+	/* Restore callee values */
+	popq %r15
+	popq %r14
+	popq %r13
+	popq %r12
+	popq %rbx
+	popq %rbp
 	ret
 
 /*

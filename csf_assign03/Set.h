@@ -21,6 +21,8 @@ class Set {
     Set(int set_size, int block_size);
 
     private:
+    int set_size;
+    int block_size;
     vector<Slot> slots;
 };
 

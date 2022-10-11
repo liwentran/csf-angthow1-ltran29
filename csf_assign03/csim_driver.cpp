@@ -2,9 +2,9 @@
 #include <sstream>
 #include <string>
 #include <ctype.h>
-#include<string.h>
+#include <string.h>
 
-#include "csim_functions.h"
+#include "Csim.h"
 #include "Cache.h"
 
 
@@ -14,6 +14,7 @@ using std::cerr;
 using std::string;
 using std::istringstream;
 using std::stoi;
+using std::stol;
 using std::endl;
 using std::isdigit;
 
@@ -129,26 +130,30 @@ int main(int argc, char** argv) {
     Cache c = Cache(cache_size, set_size, block_size, write_allocate, write_t, evict_t);
 
     c.print_design();
-    return 0;
 
     // read each line of the trace file
     string line;
+    Csim simulator;
     while (getline(cin, line)) {
         istringstream is(line);
         
         // read the first two fields (ignoring the third)
-        char process;       // either 'l' (loading) or 's' (storing)
+        char command;       // either 'l' (loading) or 's' (storing)
         string address_hex; // 32-bit memory address given in hexadecimal
         // int32_t address;    // 32-bit memory address in int
 
-        is >> process;
+        is >> command;
         is >> address_hex;
-        // address = stoi(address_hex, 0, 16);
-        // cout << "Process: " << process << ", Address: " << address_hex << ", Numeric address: " << address << endl;
+        uint32_t address = stol(address_hex, 0, 16);
+        cout << "Command: " << command << ", Address: " << address_hex << ", Numeric address: " << address << endl;
         
         // Process line
+        simulator.process(command, address);
+
     }
 
+    // Output summary
+    simulator.summary();
     return 0;
 }
 

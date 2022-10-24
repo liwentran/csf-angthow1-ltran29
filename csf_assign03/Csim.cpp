@@ -9,7 +9,12 @@ using std::endl;
 Csim::Csim(Cache cache): cache(cache), loads(0), stores(0), load_hits(0), load_misses(0), store_hits(0), store_misses(0), cycles(0) {};
 
 void Csim::process(char command, uint32_t address)  {
-    cache.write(address);
+    if(cache.write(address) == -1){
+        //miss
+    }
+    else{
+        //hit
+    }
     if (command == 'l') {
         loads++;
     }

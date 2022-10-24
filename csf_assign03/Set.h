@@ -22,6 +22,8 @@ class Set {     //should be created up front with index, set_size, block_size
 
     // Constructor
     Set(int set_size, int block_size);
+    map <int, int> slots_map; 
+    vector<Slot> slots;
 
     private:
     int set_size; //use to determine index: log2 of this
@@ -30,9 +32,7 @@ class Set {     //should be created up front with index, set_size, block_size
 
     //calculate tag by subtracting index and offset from total capacity
     //input all slots in at start with respective tag, make sure valid is false, load 0, access 0, mapped_memory 0
-    vector<Slot> slots;
     //map tag to index of slot 
-    map <int, int> slots_map; 
 
 
     /**

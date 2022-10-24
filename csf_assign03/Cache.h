@@ -33,6 +33,7 @@ class Cache {
     bool write_allocate;    // write-allocate or no-write-allocate
     write_type write_t;     // write-through or write-back
     evict_type evict_t;     // lru (least-recently-used) or fifo evictions
+    int access_counter;
 
     vector<Set> sets;       // a cache is a vector of sets
 };

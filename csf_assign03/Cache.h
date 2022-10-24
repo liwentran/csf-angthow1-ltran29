@@ -19,6 +19,7 @@ class Cache {
 
     // Output the design parameters
     void print_design();
+    void add_set();
 
     private:
 

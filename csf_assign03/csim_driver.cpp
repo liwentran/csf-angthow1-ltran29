@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 
     // read each line of the trace file
     string line;
-    Csim simulator;
+    Csim simulator = Csim(c);
     while (getline(cin, line)) {
         istringstream is(line);
         
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
         uint32_t address = stol(address_hex, 0, 16);
         cout << "Command: " << command << ", Address: " << address_hex << ", Numeric address: " << address << endl;
         
-        // Process line
+        // Process line (one line at a time)
         simulator.process(command, address);
 
     }

@@ -34,19 +34,45 @@ int Cache::write(uint32_t address) {
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[log2(index)];
     auto i = s.slots_map.find(tag);
-    if (i != s.slots_map.end()) {
-    // hit
-    int index_of_slot = i->second;
-    //update data
-    s.slots[index_of_slot].mapped_memory = address;
-    //update access timestamp
-    s.slots[index_of_slot].access_ts = ++access_counter;
-    } else { // miss
-        //remove logic
-        //Slot removed;
-        for(int i = 0; i < s.slots.size(); i++){
+    if (i != s.slots_map.end()) { // hit
+        int index_of_slot = i->second;
+        //update data
+        s.slots[index_of_slot].mapped_memory = address;
+        //update access timestamp
+        s.slots[index_of_slot].access_ts = ++access_counter;
+        return 1;
 
+    } else { // miss (need to handle invalid)
+        //remove logic based on LRU
+        Slot lru = s.slots[0];
+        int rm_idx = 0;
+
+        //if first slot is invalid then no need to run
+        if(lru.valid){
+            for(int i = 1; i < s.slots.size(); i++){
+                if(!s.slots[i].valid){ //if slot is invalid use it
+                    rm_idx = i;
+                    break;
+                }
+                if(s.slots[i].access_ts < s.slots[rm_idx].access_ts){
+                    rm_idx = i;
+                }
+            }
         }
+
+        //update map 
+        //if valid
+        if(s.slots[rm_idx].valid){
+            s.slots_map.erase(s.slots[rm_idx].tag);
+        }
+        s.slots_map.insert(tag,rm_idx);
+
+        //update data
+        s.slots[rm_idx].valid = true;
+        s.slots[rm_idx].tag = tag;
+        s.slots[rm_idx].mapped_memory = address;
+        s.slots[rm_idx].access_ts = ++access_counter;
+        return -1;
     }
 
 

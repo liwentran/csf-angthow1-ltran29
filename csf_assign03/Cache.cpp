@@ -14,6 +14,23 @@ Cache::Cache(int cache_size, int set_size, int block_size, bool write_allocate, 
     }
 }
 
+int Cache::write(uint32_t address) {
+
+    int index;
+    int tag;
+    int offset;
+
+    
+
+    /**
+     * 1. We then call a function in cache that breaks the memory into tag, index, offset based on cache size (index - offset length), set size (index length), and block size (offset length).
+     * The function returns 1 if a hit, and 0 if it is a miss (for counting purposes). In the function, check if the tag at corresponding index exists. 
+     * If not, its a miss. We then replace a slot in the set based on LRU or FIFO
+    if the tag exists, then we update it. Update the access_ts
+    */
+
+}
+
 // Outputs the design parameters
 void Cache::print_design() {
     cout << "Cache size: " << cache_size << endl 

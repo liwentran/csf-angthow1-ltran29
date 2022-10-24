@@ -19,9 +19,12 @@ class Cache {
 
     // Output the design parameters
     void print_design();
-    void add_set();
+    //returns -1 if miss, 1 if hit
+    int write(uint32_t address);
 
     private:
+
+    int log2(int memory);
 
     // TODO: move the cache design parameters to a struct?
     int cache_size;         // number of sets in the cache (a positive power-of-2)

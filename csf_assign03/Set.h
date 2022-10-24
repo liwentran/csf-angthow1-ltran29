@@ -20,7 +20,6 @@ struct Slot {
 // TODO: Create set.cpp and make the constructor
 class Set {   
     public:
-
     // Constructor
     Set(int set_size, int block_size);
     map <int, int> slots_map; 

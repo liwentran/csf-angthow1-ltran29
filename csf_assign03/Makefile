@@ -11,7 +11,7 @@ csim_driver.o: csim_driver.cpp Csim.h Cache.h
 Csim.o: Csim.cpp
 	g++ -c Csim.cpp $(CFLAGS)
 
-Cache.o: Cache.cpp Set.h
+Cache.o: Cache.cpp Set.h 
 	g++ -c Cache.cpp $(CFLAGS)
 
 Set.o: Set.cpp

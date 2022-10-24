@@ -15,6 +15,12 @@ cache_size(cache_size), set_size(set_size), block_size(block_size), write_alloca
     }
 }
 
+int Cache::log2(int memory){
+    int result = 0;
+    while (memory >>= 1) result++; 
+    return result;
+}
+
 int Cache::write(uint32_t address) {
 
     //need to check for 0?
@@ -49,7 +55,7 @@ int Cache::write(uint32_t address) {
 
         //if first slot is invalid then no need to run
         if(lru.valid){
-            for(int i = 1; i < s.slots.size(); i++){
+            for(unsigned i = 1; i < s.slots.size(); i++){
                 if(!s.slots[i].valid){ //if slot is invalid use it
                     rm_idx = i;
                     break;
@@ -65,7 +71,7 @@ int Cache::write(uint32_t address) {
         if(s.slots[rm_idx].valid){
             s.slots_map.erase(s.slots[rm_idx].tag);
         }
-        s.slots_map.insert(tag,rm_idx);
+        s.slots_map[tag] = rm_idx;
 
         //update data
         s.slots[rm_idx].valid = true;
@@ -73,25 +79,9 @@ int Cache::write(uint32_t address) {
         s.slots[rm_idx].mapped_memory = address;
         s.slots[rm_idx].access_ts = ++access_counter;
         return -1;
-    }
+    }}
 
 
-    
-
-    /**
-     * 1. We then call a function in cache that breaks the memory into tag, index, offset based on cache size (index - offset length), set size (index length), and block size (offset length).
-     * The function returns 1 if a hit, and 0 if it is a miss (for counting purposes). In the function, check if the tag at corresponding index exists. 
-     * If not, its a miss. We then replace a slot in the set based on LRU or FIFO
-    if the tag exists, then we update it. Update the access_ts
-    */
-
-}
-
-    int log2(int memory){
-        int result = 0;
-        while (memory >>= 1) result++; 
-        return result;
-    }
 
 
 // Outputs the design parameters

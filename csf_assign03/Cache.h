@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Set.h"
+#include <stdint.h>
 using std::vector;
 
 // design parameters

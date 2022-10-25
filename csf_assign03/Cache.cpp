@@ -72,7 +72,7 @@ int Cache::load(uint32_t address, bool is_dirty) {
         if(s.slots[rm_idx].valid){
             s.slots_map.erase(s.slots[rm_idx].tag);
             if(s.slots[rm_idx].dirty){
-                cycles += block_size / 4 * 100;
+                cycles += 100;
             }
         }
         s.slots_map[tag] = rm_idx;
@@ -125,7 +125,9 @@ int Cache::store(uint32_t address) {
                 load(address, true);
             }
         }
-        cycles += 100; //store in memory
+        else{
+            cycles += 100; //store in memory
+        }
         return -1;
     }
 

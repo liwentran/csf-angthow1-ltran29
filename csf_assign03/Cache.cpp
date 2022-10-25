@@ -37,16 +37,14 @@ int Cache::load(uint32_t address, bool is_dirty) {
     uint32_t index = tag % cache_size; // Get index
     tag >>= log2(cache_size); // Get the rest which is the tag
 
-
-
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[index];
     auto i = s.slots_map.find(tag);
     if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
         //cout << "Valid: " << i->second;
         int index_of_slot = i->second;
-        //update data
         cycles++;
+        //update data
         s.slots[index_of_slot].mapped_memory = address;
         //update access timestamp
         s.slots[index_of_slot].access_ts = ++access_counter;
@@ -117,7 +115,7 @@ int Cache::store(uint32_t address) {
     } else { // miss
         //remove logic based on LRU
         if(write_allocate){
-            load(address, false); //loads will never miss
+            //load(address, false);
             //load into cache
             if(write_t == write_through){ //write through
                 load(address, false);

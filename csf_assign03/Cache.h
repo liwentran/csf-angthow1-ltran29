@@ -21,7 +21,9 @@ class Cache {
     // Output the design parameters
     void print_design();
     //returns -1 if miss, 1 if hit
-    int write(uint32_t address);
+    int load(uint32_t address, bool is_dirty);
+    int store(uint32_t address);
+    unsigned long get_cycles();
 
     private:
 
@@ -34,6 +36,7 @@ class Cache {
     bool write_allocate;    // write-allocate or no-write-allocate
     write_type write_t;     // write-through or write-back
     evict_type evict_t;     // lru (least-recently-used) or fifo evictions
+    unsigned long cycles;
     int access_counter;
 
     vector<Set> sets;       // a cache is a vector of sets

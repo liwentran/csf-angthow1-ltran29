@@ -15,6 +15,7 @@ class Csim {
         void summary();
         
     private:
+        Cache cache;
         int loads;
         int stores;
         int load_hits;
@@ -22,7 +23,6 @@ class Csim {
         int store_hits;
         int store_misses;
         int cycles;
-        Cache cache;
 };
 
 #endif // CSIM_H

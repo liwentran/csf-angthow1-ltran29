@@ -13,7 +13,7 @@ void Csim::process(char command, uint32_t address)  {
 
     if (command == 'l') {
         loads++;
-        if(cache.write(address) == -1){ //miss
+        if(cache.load(address, false) == -1){ //miss
             load_misses++;
         } else{ //hit
             load_hits++;
@@ -21,7 +21,7 @@ void Csim::process(char command, uint32_t address)  {
     }
     if (command == 's') {
         stores++;
-        if(cache.write(address) == -1){ //miss
+        if(cache.store(address) == -1){ //miss
             store_misses++;
         } else{ //hit
             store_hits++;
@@ -37,5 +37,5 @@ void Csim::summary() {
         << "Load misses: " << load_misses << endl
         << "Store hits: " << store_hits << endl
         << "Store misses: " << store_misses << endl
-        << "Total cycles: " << cycles << endl;
+        << "Total cycles: " << cache.get_cycles() << endl;
 }

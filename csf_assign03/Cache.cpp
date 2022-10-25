@@ -103,11 +103,9 @@ int Cache::store(uint32_t address) {
     uint32_t index = address << tag_size;
     //clear offset
     index >>= (tag_size + offset_size);
-    cout << "index: " << index << '\n';
 
     //get tag
     uint32_t tag = address >> (index_size + offset_size);
-    cout << "tag: " << tag << '\n'; 
 
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[log2(index)];

@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
     // Create the Cache object
     Cache c = Cache(cache_size, set_size, block_size, write_allocate, write_t, evict_t);
 
-    c.print_design();
+    //c.print_design();
 
     // read each line of the trace file
     string line;
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
         is >> command;
         is >> address_hex;
         uint32_t address = stol(address_hex, 0, 16);
-        cout << "Command: " << command << ", Address: " << address_hex << ", Numeric address: " << address << endl;
+        //cout << "Command: " << command << ", Address: " << address_hex << ", Numeric address: " << address << endl;
         
         // Process line (one line at a time)
         simulator.process(command, address);

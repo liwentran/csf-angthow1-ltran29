@@ -24,6 +24,7 @@ class Cache {
     int load(uint32_t address, bool is_dirty);
     int store(uint32_t address);
     unsigned long get_cycles();
+    void inc_cycles();
 
     private:
 

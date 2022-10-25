@@ -18,6 +18,9 @@ cache_size(cache_size), set_size(set_size), block_size(block_size), write_alloca
 unsigned long Cache::get_cycles(){
     return cycles;
 }
+void Cache::inc_cycles(){
+    cycles++;
+}
 
 int Cache::log2(int memory){
     int result = 0;
@@ -27,23 +30,20 @@ int Cache::log2(int memory){
 
 
 int Cache::load(uint32_t address, bool is_dirty) {
-    //need to check for 0?
-    uint32_t index_size = log2(set_size);
-    uint32_t offset_size = log2(block_size);
-    uint32_t tag_size = 32 - index_size - offset_size;
 
-    //get index: clear tag
-    uint32_t index = address << tag_size;
-    //clear offset
-    index >>= (tag_size + offset_size);
+    uint32_t tag = address;
+    tag >>= log2(block_size); // Get rid of the offset
+    uint32_t index = tag % cache_size; // Get index
+    tag >>= log2(cache_size); // Get the rest which is the tag
 
-    //get tag
-    uint32_t tag = address >> (index_size + offset_size);
+    //cout << "\nAddress: " << address << ", tag: " << tag << ", index: " << index;
+
 
     //check if tag exists in index, use map (maps tag to index)
-    Set &s = sets[log2(index)];
+    Set &s = sets[index];
     auto i = s.slots_map.find(tag);
-    if (i != s.slots_map.end()) { // hit
+    if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
+        //cout << "Valid: " << i->second;
         int index_of_slot = i->second;
         //update data
         s.slots[index_of_slot].mapped_memory = address;
@@ -52,6 +52,7 @@ int Cache::load(uint32_t address, bool is_dirty) {
         return 1;
 
     } else { // miss
+        //cout << "Miss\n";
         //remove logic based on LRU
         Slot lru = s.slots[0];
         int rm_idx = 0;
@@ -113,7 +114,7 @@ int Cache::store(uint32_t address) {
     if (i != s.slots_map.end()) { // hit
         if(write_t == write_through){ //write through
             load(address, false);
-            cycles += block_size / 4 * 100;
+            cycles += 100;
         }
         else{ //write back
             load(address, true);
@@ -128,9 +129,9 @@ int Cache::store(uint32_t address) {
         }
         if(write_t == write_through){ //write through
             load(address, false);
-            cycles += block_size / 4 * 100; //store in memory
+            cycles += 100; //store in memory
         }
-        else{ //write back
+        else{ //write back 
             load(address, true);
         }
         return -1;

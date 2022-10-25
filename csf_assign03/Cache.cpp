@@ -31,6 +31,7 @@ int Cache::log2(int memory){
 
 int Cache::load(uint32_t address, bool is_dirty) {
 
+
     uint32_t tag = address;
     tag >>= log2(block_size); // Get rid of the offset
     uint32_t index = tag % cache_size; // Get index
@@ -42,10 +43,10 @@ int Cache::load(uint32_t address, bool is_dirty) {
     Set &s = sets[index];
     auto i = s.slots_map.find(tag);
     if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
-        cycles++;
         //cout << "Valid: " << i->second;
         int index_of_slot = i->second;
         //update data
+        cycles++;
         s.slots[index_of_slot].mapped_memory = address;
         //update access timestamp
         s.slots[index_of_slot].access_ts = ++access_counter;
@@ -70,10 +71,10 @@ int Cache::load(uint32_t address, bool is_dirty) {
         }
         //update map 
         //if valid
-        if(s.slots[rm_idx].valid){
+        if(s.slots[rm_idx].valid){ //remove from map
             s.slots_map.erase(s.slots[rm_idx].tag);
             if(s.slots[rm_idx].dirty){
-                cycles += 100;
+                cycles += block_size / 4 * 100;
             }
         }
         s.slots_map[tag] = rm_idx;
@@ -83,7 +84,9 @@ int Cache::load(uint32_t address, bool is_dirty) {
         s.slots[rm_idx].valid = true;
         if(is_dirty){
             s.slots[rm_idx].dirty = true;
-         }
+         } else{
+            s.slots[rm_idx].dirty = false;
+        }
         s.slots[rm_idx].tag = tag;
         s.slots[rm_idx].mapped_memory = address;
         s.slots[rm_idx].access_ts = ++access_counter;
@@ -114,7 +117,7 @@ int Cache::store(uint32_t address) {
     } else { // miss
         //remove logic based on LRU
         if(write_allocate){
-            load(address, false);
+            load(address, false); //loads will never miss
             //load into cache
             if(write_t == write_through){ //write through
                 load(address, false);

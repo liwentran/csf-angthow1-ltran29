@@ -117,14 +117,15 @@ int Cache::store(uint32_t address) {
         if(write_allocate){
             load(address, false);
             //load into cache
+            if(write_t == write_through){ //write through
+                load(address, false);
+                cycles += 100; //store in memory
+            }
+            else{ //write back 
+                load(address, true);
+            }
         }
-        if(write_t == write_through){ //write through
-            load(address, false);
-            cycles += 100; //store in memory
-        }
-        else{ //write back 
-            load(address, true);
-        }
+        cycles += 100; //store in memory
         return -1;
     }
 

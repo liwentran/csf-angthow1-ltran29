@@ -42,6 +42,7 @@ int Cache::load(uint32_t address, bool is_dirty) {
     Set &s = sets[index];
     auto i = s.slots_map.find(tag);
     if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
+        cycles++;
         //cout << "Valid: " << i->second;
         int index_of_slot = i->second;
         //update data
@@ -92,8 +93,6 @@ int Cache::load(uint32_t address, bool is_dirty) {
 
 
 int Cache::store(uint32_t address) {
-
-
     uint32_t tag = address;
     tag >>= log2(block_size); // Get rid of the offset
     uint32_t index = tag % cache_size; // Get index

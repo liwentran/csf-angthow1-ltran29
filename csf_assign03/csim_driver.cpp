@@ -20,9 +20,79 @@ using std::isdigit;
 
 bool is_power_of_two(int x);
 bool is_valid_int(char* arg);
-
-
+int validate_parameters(int argc, char** argv);
 int main(int argc, char** argv) { 
+    // check if arguments are valid 
+    if (validate_parameters(argc, argv) != 0) {
+        return 1;
+    }
+
+    // Once validated, initailize parameters
+    int cache_size = stoi(argv[1]), set_size = stoi(argv[2]),  block_size =  stoi(argv[3]);
+    bool write_allocate =  strcmp(argv[4], "write-allocate") == 0 ? true : false;
+    write_type write_t = strcmp(argv[5], "write-through") == 0 ? write_through : write_back;
+    evict_type evict_t = strcmp(argv[6], "lru") == 0 ? lru : fifo;
+
+    // Create the Cache object
+    Cache c = Cache(cache_size, set_size, block_size, write_allocate, write_t, evict_t);
+    //c.print_design();
+
+    // read each line of the trace file
+    string line;
+    Csim simulator = Csim(c);
+    while (getline(cin, line)) {
+        istringstream is(line);
+        
+        // read the first two fields (ignoring the third)
+        char command;       // either 'l' (loading) or 's' (storing)
+        string address_hex; // 32-bit memory address given in hexadecimal
+        
+        is >> command;
+        is >> address_hex;
+        uint32_t address = stol(address_hex, 0, 16);
+                
+        // Process line (one line at a time)
+        simulator.process(command, address);
+    }
+
+    // Output summary
+    simulator.summary();
+    return 0;
+}
+
+/**
+ * @brief Checks if the value is a power of two
+ * 
+ * @return a boolean: true if valid, false if invalid
+ */
+bool is_power_of_two(int x) {
+    return (x != 0) && ((x & (x - 1)) == 0);
+}
+
+/**
+ * @brief Checks if the input string has only digits
+ * 
+ * @param str String to check
+ * @return a boolean: true if valid, false if invalid
+ */
+bool is_valid_int(char* str) {
+    while (*str) {
+        if (!isdigit(*str)) {
+            return false;
+        }
+        str++;
+    }
+    return true;
+}
+
+/**
+ * @brief Validates input parameters
+ * 
+ * @param argc Number of arguments
+ * @param argv Array of arguments
+ * @return 1 if error, 0 if valid 
+ */
+int validate_parameters(int argc, char** argv) {
     /**
      * Reading Cache Parameters:
      * 
@@ -110,12 +180,7 @@ int main(int argc, char** argv) {
 
     // Evict type validation
     arg = argv[6];
-    evict_type evict_t;
-    if (strcmp(arg, "lru") == 0) {
-        evict_t = lru;
-    } else if (strcmp(arg, "fifo") == 0) {
-        evict_t = fifo;
-    } else {
+    if (strcmp(arg, "lru") != 0 && strcmp(arg, "fifo") != 0) {
         cerr << "6th parameter must be lru or fifo" << endl;
         return 1;
     }
@@ -126,47 +191,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Create the Cache object
-    Cache c = Cache(cache_size, set_size, block_size, write_allocate, write_t, evict_t);
-
-    //c.print_design();
-
-    // read each line of the trace file
-    string line;
-    Csim simulator = Csim(c);
-    while (getline(cin, line)) {
-        istringstream is(line);
-        
-        // read the first two fields (ignoring the third)
-        char command;       // either 'l' (loading) or 's' (storing)
-        string address_hex; // 32-bit memory address given in hexadecimal
-        // int32_t address;    // 32-bit memory address in int
-
-        is >> command;
-        is >> address_hex;
-        uint32_t address = stol(address_hex, 0, 16);
-        //cout << "Command: " << command << ", Address: " << address_hex << ", Numeric address: " << address << endl;
-        
-        // Process line (one line at a time)
-        simulator.process(command, address);
-
-    }
-
-    // Output summary
-    simulator.summary();
+    // passed all validation tests
     return 0;
-}
-
-bool is_power_of_two(int x) {
-    return (x != 0) && ((x & (x - 1)) == 0);
-}
-
-bool is_valid_int(char* str) {
-    while (*str) {
-        if (!isdigit(*str)) {
-            return false;
-        }
-        str++;
-    }
-    return true;
 }

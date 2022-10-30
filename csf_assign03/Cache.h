@@ -26,6 +26,7 @@ class Cache {
     unsigned long get_cycles();
     void inc_cycles();
     void unwrap_address(uint32_t address, uint32_t &tag, uint32_t &index);
+    int find_valid_index(Set &s);
 
     private:
 

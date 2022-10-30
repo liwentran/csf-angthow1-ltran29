@@ -34,58 +34,67 @@ void Cache::unwrap_address(uint32_t address, uint32_t &tag, uint32_t &index) {
     tag >>= log2(cache_size); // Get the rest which is the tag
 }
 
+int Cache::find_valid_index(Set &s) {
+    int rm_idx = 0;
+    for(unsigned i = 1; i < s.slots.size(); i++){
+        if(!s.slots[i].valid){ //if slot is invalid use it
+            rm_idx = i;
+            break;
+        }
+        if(evict_t == fifo){
+            if(s.slots[i].load_ts < s.slots[rm_idx].load_ts){
+                rm_idx = i;
+            }
+        }
+        else{
+            if(s.slots[i].access_ts < s.slots[rm_idx].access_ts){
+                rm_idx = i;
+            }
+        }
+    }
+    return rm_idx;
+}
 
 int Cache::load(uint32_t address, bool is_dirty) {
     uint32_t tag, index;
     unwrap_address(address, tag, index);
+
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[index];
     auto i = s.slots_map.find(tag);
+
     if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
-        //cout << "Valid: " << i->second;
         int index_of_slot = i->second;
         cycles++;
-        //update data
-        s.slots[index_of_slot].mapped_memory = address;
-        //update access timestamp
-        s.slots[index_of_slot].access_ts = ++access_counter;
+        s.slots[index_of_slot].mapped_memory = address;         // update data
+        s.slots[index_of_slot].access_ts = ++access_counter;    // update access timestamp
         return 1;
+
     } else { // miss
         Slot lru = s.slots[0];         //remove logic based on LRU
         int rm_idx = 0;
-        if(lru.valid){         //if first slot is invalid then no need to run
-            for(unsigned i = 1; i < s.slots.size(); i++){
-                if(!s.slots[i].valid){ //if slot is invalid use it
-                    rm_idx = i;
-                    break;
-                }
-                if(evict_t == fifo){
-                    if(s.slots[i].load_ts < s.slots[rm_idx].load_ts){
-                        rm_idx = i;
-                    }
-                }
-                else{
-                    if(s.slots[i].access_ts < s.slots[rm_idx].access_ts){
-                        rm_idx = i;
-                    }
-                }
 
-            }
+        if(lru.valid){         //if first slot is invalid then no need to run
+            rm_idx = find_valid_index(s);
         }
+
         if(s.slots[rm_idx].valid){ //remove from map
             s.slots_map.erase(s.slots[rm_idx].tag);
             if(s.slots[rm_idx].dirty){
                 cycles += block_size / 4 * 100;
             }
         }
+
         s.slots_map[tag] = rm_idx;
         cycles += block_size / 4 * 100;         //update data and cycles
         s.slots[rm_idx].valid = true;
+
         if(is_dirty){
             s.slots[rm_idx].dirty = true;
          } else{
             s.slots[rm_idx].dirty = false;
         }
+        
         s.slots[rm_idx].tag = tag;
         s.slots[rm_idx].mapped_memory = address;
         s.slots[rm_idx].access_ts = ++access_counter;

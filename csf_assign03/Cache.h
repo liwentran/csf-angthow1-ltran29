@@ -25,6 +25,7 @@ class Cache {
     int store(uint32_t address);
     unsigned long get_cycles();
     void inc_cycles();
+    void unwrap_address(uint32_t address, uint32_t &tag, uint32_t &index);
 
     private:
 

@@ -28,14 +28,17 @@ int Cache::log2(int memory){
     return result;
 }
 
+void Cache::unwrap_address(uint32_t address, uint32_t &tag, uint32_t &index) {
+    tag = address;
+    tag >>= log2(block_size); // Get rid of the offset
+    index = tag % cache_size; // Get index
+    tag >>= log2(cache_size); // Get the rest which is the tag
+}
+
 
 int Cache::load(uint32_t address, bool is_dirty) {
-
-
-    uint32_t tag = address;
-    tag >>= log2(block_size); // Get rid of the offset
-    uint32_t index = tag % cache_size; // Get index
-    tag >>= log2(cache_size); // Get the rest which is the tag
+    uint32_t tag, index;
+    unwrap_address(address, tag, index);
 
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[index];
@@ -94,10 +97,8 @@ int Cache::load(uint32_t address, bool is_dirty) {
 
 
 int Cache::store(uint32_t address) {
-    uint32_t tag = address;
-    tag >>= log2(block_size); // Get rid of the offset
-    uint32_t index = tag % cache_size; // Get index
-    tag >>= log2(cache_size); // Get the rest which is the tag
+    uint32_t tag, index;
+    unwrap_address(address, tag, index);
 
     //check if tag exists in index, use map (maps tag to index)
     Set &s = sets[index];

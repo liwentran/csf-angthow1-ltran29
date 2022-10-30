@@ -11,5 +11,4 @@ Set::Set(int set_size, int block_size) : set_size(set_size), block_size(block_si
         Slot s = Slot(false, false, 0);
             slots.push_back(s);
     }
-
 }

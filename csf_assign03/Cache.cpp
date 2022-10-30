@@ -58,43 +58,34 @@ int Cache::find_valid_index(Set &s) {
 int Cache::load(uint32_t address, bool is_dirty) {
     uint32_t tag, index;
     unwrap_address(address, tag, index);
-
-    //check if tag exists in index, use map (maps tag to index)
-    Set &s = sets[index];
+    Set &s = sets[index]; //check if tag exists in index, use map (maps tag to index)
     auto i = s.slots_map.find(tag);
-
     if (i != s.slots_map.end() && s.slots[i->second].valid) { // hit
         int index_of_slot = i->second;
         cycles++;
-        s.slots[index_of_slot].mapped_memory = address;         // update data
-        s.slots[index_of_slot].access_ts = ++access_counter;    // update access timestamp
+        s.slots[index_of_slot].mapped_memory = address; // update data
+        s.slots[index_of_slot].access_ts = ++access_counter; // update access timestamp
         return 1;
-
     } else { // miss
-        Slot lru = s.slots[0];         //remove logic based on LRU
+        Slot lru = s.slots[0]; //remove logic based on LRU
         int rm_idx = 0;
-
-        if(lru.valid){         //if first slot is invalid then no need to run
+        if(lru.valid){ //if first slot is invalid then no need to run
             rm_idx = find_valid_index(s);
         }
-
         if(s.slots[rm_idx].valid){ //remove from map
             s.slots_map.erase(s.slots[rm_idx].tag);
             if(s.slots[rm_idx].dirty){
                 cycles += block_size / 4 * 100;
             }
         }
-
         s.slots_map[tag] = rm_idx;
-        cycles += block_size / 4 * 100;         //update data and cycles
+        cycles += block_size / 4 * 100; //update data and cycles
         s.slots[rm_idx].valid = true;
-
         if(is_dirty){
             s.slots[rm_idx].dirty = true;
          } else{
             s.slots[rm_idx].dirty = false;
         }
-        
         s.slots[rm_idx].tag = tag;
         s.slots[rm_idx].mapped_memory = address;
         s.slots[rm_idx].access_ts = ++access_counter;

@@ -11,7 +11,9 @@ Implemented all MS2 functions together through side-by-side partner coding.
 Implemented all MS2 functions together through side-by-side partner coding. 
 
 
-We will run a variety of tests while holding one factor constant. With `./csim 256 4 128 write-allocate write-through  lru < ./traces/swim.trace` our control.
+We will run a variety of tests while holding one factor constant. That way we can thoroughly analyze the effects of each individual factor. 
+We will use `./csim 256 4 128 write-allocate write-through  lru < ./traces/swim.trace` our control. That way we can have a reference point for our changes.
+
 Total loads: 220668
 Total stores: 82525
 Load hits: 220374
@@ -170,6 +172,5 @@ We conclude that LRU is better for performance because it requires less cycles.
 
 
 
-
-
 From our experiments, we can conclude that best cache will be the one with the most number of sets, blocks, number of bytes per block with no-write-allocate, write-back, and LRU.
+

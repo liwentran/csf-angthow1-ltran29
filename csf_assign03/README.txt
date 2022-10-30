@@ -117,7 +117,7 @@ Store hits: 70275
 Store misses: 12250
 Total cycles: 11582493
 
-We conclude that not having write allocate is better for performance because it requires less cycles.
+We conclude that not having write allocate is better for performance because it requires less cycles. However, we have to keep in mind, that depending on the usage case, write-allocate will be better, ecspecially if you access the same thing over and over again.
 
 Write through vs Write back
 Increase:
@@ -141,7 +141,7 @@ Store hits: 80967
 Store misses: 1558
 Total cycles: 8707741
 
-We conclude that write back is better for performance because it requires less cycles.
+We conclude that write back is better for performance because it requires less cycles. Intuitively, this makes sense because if you update memory every single time instead of doing it all at once, it will be slower.
 
 
 LRU vs fifo
@@ -166,7 +166,7 @@ Store hits: 80960
 Store misses: 1565
 Total cycles: 14595405
 
-We conclude that LRU is better for performance because it requires less cycles.
+We conclude that LRU is better for performance because it requires less cycles and there are less misses in both load and store.
 
 
 

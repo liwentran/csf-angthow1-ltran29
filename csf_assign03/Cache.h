@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Set.h"
+#include <stdint.h>
 using std::vector;
 
 // design parameters
@@ -19,8 +20,17 @@ class Cache {
 
     // Output the design parameters
     void print_design();
+    //returns -1 if miss, 1 if hit
+    int load(uint32_t address, bool is_dirty);
+    int store(uint32_t address);
+    unsigned long get_cycles();
+    void inc_cycles();
+    void unwrap_address(uint32_t address, uint32_t &tag, uint32_t &index);
+    int find_valid_index(Set &s);
 
     private:
+
+    int log2(int memory);
 
     // TODO: move the cache design parameters to a struct?
     int cache_size;         // number of sets in the cache (a positive power-of-2)
@@ -29,6 +39,8 @@ class Cache {
     bool write_allocate;    // write-allocate or no-write-allocate
     write_type write_t;     // write-through or write-back
     evict_type evict_t;     // lru (least-recently-used) or fifo evictions
+    unsigned long cycles;
+    int access_counter;
 
     vector<Set> sets;       // a cache is a vector of sets
 };

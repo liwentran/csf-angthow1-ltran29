@@ -26,7 +26,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   /* Merge the temp into temparr */
   i = begin;    // Initial index of leftside of the array
   j = mid + 1;  // Initial index of rightside of the array
-  k = begin;    // Initial index of temp array
+  k = 0;    // Initial index of temp array
   while (i < mid + 1 && j < end + 1) {
     if (arr[i] <= arr[j]) {
       temparr[k] = arr[i];

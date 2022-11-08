@@ -55,7 +55,6 @@ int main(int argc, char **argv) {
   }
   size_t file_size_in_bytes = statbuf.st_size;
   // fprintf("File size is %s", file_size_in_bytes);
-  close(fd);
 
   // TODO: map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -70,6 +69,8 @@ int main(int argc, char **argv) {
   // TODO: sort the data!
 
   // TODO: unmap and close the file
-
+  munmap(data, file_size_in_bytes);
+  close(fd);
   // TODO: exit with a 0 exit code if sort was successful
+  exit(EXIT_SUCCESS);
 }

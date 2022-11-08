@@ -12,7 +12,7 @@
 
 void error(char *msg) /* Unix-style error */ {
     fprintf(stderr, "%s\n", msg);
-    exit(0);
+    exit(EXIT_FAILURE);
 }
 
 // Compare function for qsort
@@ -62,12 +62,34 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     qsort(arr, arr_size, sizeof(int), cmpfunc);
     return;
   } else if (begin < end) {
-  //  { // I believe its unecessary if we have <= threshold
     int m = begin + (end - begin) / 2;
 
     // Sort first and second halves IN PARALLEL
-    merge_sort(arr, begin, m, threshold);
-    merge_sort(arr, m + 1, end, threshold);
+    pid_t pid1 = fork();
+    if (pid1 == -1) {
+      error("Error: could not create fork 1");
+    } else if (pid1 == 0) {
+      merge_sort(arr, begin, m, threshold);
+      exit(0);
+    } else {    // if pid is not 0, we are in the parent process
+      merge_sort(arr, m + 1, end, threshold);
+    }
+
+    //pause program execution until a child process has completed
+    int wstatus;
+    // blocks until the process indentified by pid_to_wait_for completes
+    pid_t actual_pid = waitpid(pid1, &wstatus, 0);
+    if (actual_pid == -1) {
+      error("Error: waitpid failure");
+    }
+
+    if (!WIFEXITED(wstatus)) {
+      error("Error: subprocess crashed, was interrupted, or did not exit normally");
+    }
+    if (WEXITSTATUS(wstatus) != 0) {
+      // if following standard UNIX conventions, this is also an error
+      error("Error: subprocess returned a non-zero exit code");
+    }
     
     // merge the sorted sequences in a temp array
     int64_t temp_array[arr_size];
@@ -93,7 +115,7 @@ int main(int argc, char **argv) {
 
   /* report an error (threshold value is invalid) */;
   if (end != argv[2] + strlen(argv[2]))  {
-    error("Threshold value is invalid");
+    error("Error: threshold value is invalid");
   }
 
   // open the file
@@ -114,20 +136,16 @@ int main(int argc, char **argv) {
   }
   size_t file_size_in_bytes = statbuf.st_size;
 
-  // fprintf("File size is %s", file_size_in_bytes);
-
-  // TODO: map the file into memory using mmap
+  // Map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (data == MAP_FAILED) {
     // handle mmap error and exit
     fprintf(stderr, "Error: mmap error");
     exit(EXIT_FAILURE);
   }
-
   // *data now behaves like a standard array of int64_t. Be careful though! Going off the end
   // of the array will silently extend the file, which can rapidly lead to disk space
   // depletion!
-
 
   // sort the data!
   merge_sort(data, 0, file_size_in_bytes - 1, threshold);

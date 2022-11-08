@@ -99,7 +99,9 @@ int main(int argc, char **argv) {
   // open the file
   int fd = open(filename, O_RDWR);
   if (fd < 0) {
-  // file couldn't be opened: handle error and exit
+    // file couldn't be opened: handle error and exit
+    fprintf(stderr, "Error: file couldn't be opened");
+    exit(EXIT_FAILURE);
   }
 
 
@@ -107,7 +109,8 @@ int main(int argc, char **argv) {
   struct stat statbuf;
   int rc = fstat(fd, &statbuf);
   if (rc != 0) {
-      // handle fstat error and exit
+    fprintf(stderr, "Error: could not run fstat on file");
+    exit(EXIT_FAILURE);
   }
   size_t file_size_in_bytes = statbuf.st_size;
 
@@ -116,7 +119,9 @@ int main(int argc, char **argv) {
   // TODO: map the file into memory using mmap
   int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (data == MAP_FAILED) {
-      // handle mmap error and exit
+    // handle mmap error and exit
+    fprintf(stderr, "Error: mmap error");
+    exit(EXIT_FAILURE);
   }
 
   // *data now behaves like a standard array of int64_t. Be careful though! Going off the end

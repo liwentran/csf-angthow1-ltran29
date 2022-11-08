@@ -61,8 +61,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   if (arr_size <= threshold) {
     qsort(arr, arr_size, sizeof(int), cmpfunc);
     return;
-  } else {
-  // if (begin < end) { // I believe its unecessary if we have <= threshold
+  } else if (begin < end) {
+  //  { // I believe its unecessary if we have <= threshold
     int m = begin + (end - begin) / 2;
 
     // Sort first and second halves IN PARALLEL
@@ -74,8 +74,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     merge(arr, begin, m, end, temp_array);
     
     // copy the temp array back into the array
-    for (int i = 0; i < arr_size; i++) {
-      arr[i] = temp_array[i];
+    for (int i = begin; i <= end; i++) {
+      arr[i] = temp_array[i - begin];
     }
   }
 }

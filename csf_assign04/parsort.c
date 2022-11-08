@@ -128,7 +128,8 @@ int main(int argc, char **argv) {
   merge_sort(data, 0, file_size_in_bytes - 1, threshold);
 
   // TODO: unmap and close the file
+  munmap(data, file_size_in_bytes);
   close(fd);
-
   // TODO: exit with a 0 exit code if sort was successful
+  exit(EXIT_SUCCESS);
 }

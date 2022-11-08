@@ -10,6 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+void error(char *msg) /* Unix-style error */ {
+    fprintf(stderr, "%s\n", msg);
+    exit(0);
+}
+
 void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr) {
   // TODO: implement
 }
@@ -29,14 +34,38 @@ int main(int argc, char **argv) {
   const char *filename = argv[1];
   char *end;
   size_t threshold = (size_t) strtoul(argv[2], &end, 10);
-  if (end != argv[2] + strlen(argv[2]))
-    /* TODO: report an error (threshold value is invalid) */;
 
-  // TODO: open the file
+  /* report an error (threshold value is invalid) */;
+  if (end != argv[2] + strlen(argv[2]))  {
+    error("Threshold value is invalid");
+  }
 
-  // TODO: use fstat to determine the size of the file
+  // open the file
+  int fd = open(filename, O_RDWR);
+  if (fd < 0) {
+  // file couldn't be opened: handle error and exit
+  }
+
+
+  // use fstat to determine the size of the file
+  struct stat statbuf;
+  int rc = fstat(fd, &statbuf);
+  if (rc != 0) {
+      // handle fstat error and exit
+  }
+  size_t file_size_in_bytes = statbuf.st_size;
+  // fprintf("File size is %s", file_size_in_bytes);
+  close(fd);
 
   // TODO: map the file into memory using mmap
+  int64_t *data = mmap(NULL, file_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (data == MAP_FAILED) {
+      // handle mmap error and exit
+  }
+  // *data now behaves like a standard array of int64_t. Be careful though! Going off the end
+  // of the array will silently extend the file, which can rapidly lead to disk space
+  // depletion!
+
 
   // TODO: sort the data!
 

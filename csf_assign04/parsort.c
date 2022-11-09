@@ -23,7 +23,11 @@ void print_arr(int64_t *arr) {
 }
 // Compare function for qsort
 static int cmpints(const void *p1, const void *p2) {
-    return (*(const int64_t *) p1 - *(const int64_t *) p2);
+  int64_t l = *(int64_t*) p1;
+  int64_t r = *(int64_t*) p2;
+  if (l < r) return -1;
+  if (l > r) return 1;
+  return 0;
 }
 
 
@@ -66,15 +70,10 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   // problem is small enough to use qsort
   if (arr_size <= threshold) {
-    qsort(arr, arr_size, sizeof(int64_t), cmpints);
+    qsort(arr+begin, arr_size, sizeof(int64_t), cmpints);
     return;
   } else if (begin < end) {
     int m = begin + (end - begin) / 2;
-
-    /*
-    merge_sort(arr, begin, m, threshold);
-    merge_sort(arr, m + 1, end, threshold);
-    */
 
     pid_t pid1 = -1;
     pid_t pid2 = -1;
@@ -184,7 +183,7 @@ int main(int argc, char **argv) {
   // depletion!
 
   // sort the data!
-  merge_sort(data, 0, file_size_in_bytes - 1, threshold);
+  merge_sort(data, 0, (file_size_in_bytes/sizeof(int64_t)) - 1, threshold);
 
   // TODO: unmap and close the file
   int um = munmap(data, file_size_in_bytes);

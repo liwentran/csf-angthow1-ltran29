@@ -88,16 +88,16 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       // sort the left side
       merge_sort(arr, begin, m, threshold);
       exit(EXIT_SUCCESS);
-    } else {
-      pid2 = fork();
-      if (pid2 == -1) {
-        error("Error: could not create fork 2");
-        exit(EXIT_FAILURE);
-      } else if (pid2 == 0) {
-        // sort the right side
-        merge_sort(arr, m + 1, end, threshold);
-        exit(EXIT_SUCCESS);
-      }
+    }
+    
+    pid2 = fork();
+    if (pid2 == -1) {
+      error("Error: could not create fork 2");
+      exit(EXIT_FAILURE);
+    } else if (pid2 == 0) {
+      // sort the right side
+      merge_sort(arr, m + 1, end, threshold);
+      exit(EXIT_SUCCESS);
     }
 
 

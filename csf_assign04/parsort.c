@@ -35,9 +35,9 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   int i, j, k;
   /* Merge the temp into temparr */
   i = begin;    // Initial index of leftside of the array
-  j = mid + 1;  // Initial index of rightside of the array
+  j = mid;  // Initial index of rightside of the array
   k = 0;    // Initial index of temp array
-  while (i <= mid && j <= end) {
+  while (i < mid && j < end) {
     if (arr[i] <= arr[j]) {
       temparr[k] = arr[i];
       i++;
@@ -50,14 +50,14 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 
   /* Copy the remaining elements of the left half, if there are any */
-  while (i <= mid) {
+  while (i < mid) {
     temparr[k] = arr[i];
     i++;
     k++;
   }
 
   /* Copy the remaining elements of of the right half, if there are any */
-  while (j <= end) {
+  while (j < end) {
     temparr[k] = arr[j];
     j++;
     k++;
@@ -66,14 +66,14 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
-  size_t arr_size =  end - begin + 1;
+  size_t arr_size =  end - begin;
 
   // problem is small enough to use qsort
   if (arr_size <= threshold) {
     qsort(arr+begin, arr_size, sizeof(int64_t), cmpints);
     return;
-  } else if (begin < end) {
-    int m = begin + (end - begin) / 2;
+  } else if (begin <= end) {
+    int m = begin + (end - begin) / 2; // ?
 
     pid_t pid1 = -1;
     pid_t pid2 = -1;
@@ -95,7 +95,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
       exit(EXIT_FAILURE);
     } else if (pid2 == 0) {
       // sort the right side
-      merge_sort(arr, m + 1, end, threshold);
+      merge_sort(arr, m, end, threshold);
       exit(EXIT_SUCCESS);
     }
 
@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
   // depletion!
 
   // sort the data!
-  merge_sort(data, 0, (file_size_in_bytes/sizeof(int64_t)) - 1, threshold);
+  merge_sort(data, 0, (file_size_in_bytes/sizeof(int64_t)), threshold);
 
   // TODO: unmap and close the file
   int um = munmap(data, file_size_in_bytes);

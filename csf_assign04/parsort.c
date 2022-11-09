@@ -15,6 +15,12 @@ void error(char *msg) /* Unix-style error */ {
     exit(EXIT_FAILURE);
 }
 
+void print_arr(int64_t *arr) {
+  for(int loop = 0; loop < 10; loop++)
+    printf("%ld ", arr[loop]);
+
+  printf("\n");
+}
 // Compare function for qsort
 int cmpfunc (const void * a, const void * b) {
    return ( *(int*)a - *(int*)b );
@@ -27,7 +33,7 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   i = begin;    // Initial index of leftside of the array
   j = mid + 1;  // Initial index of rightside of the array
   k = 0;    // Initial index of temp array
-  while (i < mid + 1 && j < end + 1) {
+  while (i <= mid && j <= end) {
     if (arr[i] <= arr[j]) {
       temparr[k] = arr[i];
       i++;
@@ -40,18 +46,19 @@ void merge(int64_t *arr, size_t begin, size_t mid, size_t end, int64_t *temparr)
   }
 
   /* Copy the remaining elements of the left half, if there are any */
-  while (i < mid + 1) {
+  while (i <= mid) {
     temparr[k] = arr[i];
     i++;
     k++;
   }
 
   /* Copy the remaining elements of of the right half, if there are any */
-  while (j < end + 1) {
+  while (j <= end) {
     temparr[k] = arr[j];
     j++;
     k++;
   }
+  
 }
 
 void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
@@ -64,43 +71,72 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
   } else if (begin < end) {
     int m = begin + (end - begin) / 2;
 
+    /*
+    merge_sort(arr, begin, m, threshold);
+    merge_sort(arr, m + 1, end, threshold);
+    */
+
+    int pid1 = -1;
+    int pid2 = -1;
+
     // Sort first and second halves IN PARALLEL
-    pid_t pid1 = fork();
+    pid1 = fork();
     if (pid1 == -1) {
       error("Error: could not create fork 1");
+      exit(EXIT_FAILURE);
     } else if (pid1 == 0) {
+      // sort the left side
       merge_sort(arr, begin, m, threshold);
-      exit(0);
-    } else {    // if pid is not 0, we are in the parent process
-      merge_sort(arr, m + 1, end, threshold);
+      exit(EXIT_SUCCESS);
+    } else {
+      pid2 = fork();
+      if (pid2 == -1) {
+        error("Error: could not create fork 2");
+        exit(EXIT_FAILURE);
+      } else if (pid2 == 0) {
+        // sort the right side
+        merge_sort(arr, m + 1, end, threshold);
+        exit(EXIT_SUCCESS);
+      }
     }
 
-    //pause program execution until a child process has completed
+
+    //pause program execution until the child processs has completed
     int wstatus;
-    // blocks until the process indentified by pid_to_wait_for completes
-    pid_t actual_pid = waitpid(pid1, &wstatus, 0);
-    if (actual_pid == -1) {
-      error("Error: waitpid failure");
-    }
+    int wstatus2;
+    
+    // blocks until first proces completes
+    pid_t actual_pid1 = waitpid(pid1, &wstatus, 0);
+    pid_t actual_pid2 = waitpid(pid2, &wstatus2, 0);
 
-    if (!WIFEXITED(wstatus)) {
-      error("Error: subprocess crashed, was interrupted, or did not exit normally");
+    if (actual_pid1 == -1 || actual_pid2 == -1) {
+      error("Error: waitpid failure");
+      exit(EXIT_FAILURE);
     }
-    if (WEXITSTATUS(wstatus) != 0) {
+    if (!WIFEXITED(wstatus) || !WIFEXITED(wstatus2)) {
+      error("Error: subprocess crashed, was interrupted, or did not exit normally");
+      exit(EXIT_FAILURE);
+    }
+    if (WEXITSTATUS(wstatus) != 0 || WEXITSTATUS(wstatus2) != 0) {
       // if following standard UNIX conventions, this is also an error
       error("Error: subprocess returned a non-zero exit code");
+      exit(EXIT_FAILURE);
     }
-    
+
+
     // merge the sorted sequences in a temp array
-    int64_t temp_array[arr_size];
+    int64_t* temp_array = (int64_t*) malloc(arr_size * sizeof(int64_t));
     merge(arr, begin, m, end, temp_array);
     
     // copy the temp array back into the array
-    for (int i = begin; i <= end; i++) {
-      arr[i] = temp_array[i - begin];
-    }
+    // for (int i = 0; i < arr_size; i++) {
+    //   arr[begin+i] = temp_array[i];
+    // }
+    memcpy(arr, &arr[begin], arr_size * sizeof(int));
+    free(temp_array);
   }
 }
+
 int main(int argc, char **argv) {
   // check for correct number of command line arguments
   if (argc != 3) {
@@ -151,8 +187,16 @@ int main(int argc, char **argv) {
   merge_sort(data, 0, file_size_in_bytes - 1, threshold);
 
   // TODO: unmap and close the file
-  munmap(data, file_size_in_bytes);
-  close(fd);
+  int um = munmap(data, file_size_in_bytes);
+  if (um != 0) {
+    fprintf(stderr, "Error: could not unmap file");
+    exit(EXIT_FAILURE);
+  }
+  int c = close(fd);
+  if (c != 0) {
+    fprintf(stderr, "Error: could not close file");
+    exit(EXIT_FAILURE);
+  }
   // TODO: exit with a 0 exit code if sort was successful
   exit(EXIT_SUCCESS);
 }

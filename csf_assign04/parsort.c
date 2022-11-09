@@ -22,8 +22,8 @@ void print_arr(int64_t *arr) {
   printf("\n");
 }
 // Compare function for qsort
-int cmpfunc (const void * a, const void * b) {
-   return ( *(int*)a - *(int*)b );
+static int cmpints(const void *p1, const void *p2) {
+    return (*(const int64_t *) p1 - *(const int64_t *) p2);
 }
 
 
@@ -66,7 +66,7 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
 
   // problem is small enough to use qsort
   if (arr_size <= threshold) {
-    qsort(arr, arr_size, sizeof(int), cmpfunc);
+    qsort(arr, arr_size, sizeof(int64_t), cmpints);
     return;
   } else if (begin < end) {
     int m = begin + (end - begin) / 2;
@@ -76,8 +76,8 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     merge_sort(arr, m + 1, end, threshold);
     */
 
-    int pid1 = -1;
-    int pid2 = -1;
+    pid_t pid1 = -1;
+    pid_t pid2 = -1;
 
     // Sort first and second halves IN PARALLEL
     pid1 = fork();
@@ -129,10 +129,10 @@ void merge_sort(int64_t *arr, size_t begin, size_t end, size_t threshold) {
     merge(arr, begin, m, end, temp_array);
     
     // copy the temp array back into the array
-    // for (int i = 0; i < arr_size; i++) {
-    //   arr[begin+i] = temp_array[i];
-    // }
-    memcpy(arr, &arr[begin], arr_size * sizeof(int));
+    for (int i = 0; i < arr_size; i++) {
+      arr[begin+i] = temp_array[i];
+    }
+    // memcpy(arr, &arr[begin], arr_size * sizeof(int));
     free(temp_array);
   }
 }

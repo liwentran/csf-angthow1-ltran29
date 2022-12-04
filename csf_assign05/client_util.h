@@ -14,5 +14,5 @@ std::string trim(const std::string &s);
 
 // you can add additional declarations here...
 std::vector<std::string> tokenize(std::string s, std::string del);
-
+void print_vector(std::vector <std::string> const &vec);
 #endif // CLIENT_UTIL_H

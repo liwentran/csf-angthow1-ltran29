@@ -35,3 +35,10 @@ std::vector<std::string> tokenize(std::string s, std::string del = ":")
     } while (end != -1);
     return list;
 }
+
+void print_vector(std::vector <std::string> const &vec) {
+  std::cout << "The vector elements are : " << std::endl;
+
+  for(size_t i=0; i < vec.size(); i++)
+    std::cout << vec.at(i) << std::endl;
+}

@@ -21,12 +21,66 @@ int main(int argc, char **argv) {
   server_port = std::stoi(argv[2]);
   username = argv[3];
 
-  // TODO: connect to server
+  Connection conn;
+  // connect to server
+  conn.connect(server_hostname, server_port);
+  if (!conn.is_open()) {
+    std::cerr << "Failed to connect to server";
+    return 1;
+  }
 
   // TODO: send slogin message
+    conn.send(Message(TAG_SLOGIN, username));
 
-  // TODO: loop reading commands from user, sending messages to
+    Message slogin_response = Message();
+    conn.receive(slogin_response);
+
+  if (slogin_response.tag == TAG_ERR) {
+    std::cerr << slogin_response.data;
+    conn.close();
+    return 1;
+  }
+  // loop reading commands from user, sending messages to
   //       server as appropriate
+  while(1){
 
+    Message message;
+    std::string input;
+    std::getline(cin, input);
+
+    if(input.substr(0, 6) == "/join "){
+      message.tag = TAG_JOIN;
+      message.data = input.substr(6);
+    }
+    else if(input == "/leave"){
+      message.tag = TAG_LEAVE;
+    }
+    else if(input == "/quit"){
+      message.tag = TAG_QUIT;
+      conn.send(message);
+      Message quit_response = Message();
+      conn.receive(quit_response);
+      if (quit_response.tag == TAG_ERR) {
+        std::cerr << quit_response.data;
+        conn.close();
+        return 1;
+      }
+      break;
+    }
+    else{
+      message.tag = TAG_SENDALL;
+      message.data = input;
+    }
+
+      conn.send(message)
+      Message message_response = Message();
+      conn.receive(message_response);
+      if (message_response.tag == TAG_ERR) {
+        std::cerr << message_response.data;
+        conn.close();
+        return 1;
+      }
+  }
+  conn.close;
   return 0;
 }

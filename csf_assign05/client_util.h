@@ -1,6 +1,6 @@
 #ifndef CLIENT_UTIL_H
 #define CLIENT_UTIL_H
-
+#include <vector>
 #include <string>
 class Connection;
 struct Message;
@@ -13,5 +13,6 @@ std::string rtrim(const std::string &s);
 std::string trim(const std::string &s);
 
 // you can add additional declarations here...
+std::vector<std::string> tokenize(std::string s, std::string del);
 
 #endif // CLIENT_UTIL_H

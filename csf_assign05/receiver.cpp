@@ -20,14 +20,54 @@ int main(int argc, char **argv) {
 
   Connection conn;
 
-  // TODO: connect to server
+  // connect to server
+  conn.connect(server_hostname, server_port);
+  if (!conn.is_open()) {
+    std::cerr << "Failed to connect to server";
+    return 1;
+  }
 
-  // TODO: send rlogin and join messages (expect a response from
+  // is connection success?
+
+  // send rlogin and join messages (expect a response from
   //       the server for each one)
 
-  // TODO: loop waiting for messages from server
+  //login
+  conn.send(Message(TAG_RLOGIN, username));
+  
+  Message rlogin_response = Message();
+  conn.receive(rlogin_response);
+
+  if (rlogin_response.tag == TAG_ERR) {
+    std::cerr << rlogin_response.data;
+    return 1;
+  }
+
+  //join 
+  conn.send(Message(TAG_JOIN, room_name));
+
+  Message join_response = Message();
+  conn.receive(join_response);
+  
+  if (join_response.tag == TAG_ERR) {
+    std::cerr << join_response.data;
+    return 1;
+  }
+
+  // loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
 
+  while (1) {
+    Message server_msg = Message();
+    conn.receive(server_msg);
+    if (server_msg.tag == TAG_DELIVERY) {
+      std::vector<std::string> data_vector = tokenize(server_msg.data, ":");
+      // TODO: check if the data is good?
+      std::cout << username << ":" << data_vector[2];
+    }
+  }
+
+  conn.close();
 
   return 0;
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <string>
 #include "connection.h"
 #include "message.h"
@@ -21,4 +22,16 @@ std::string rtrim(const std::string &s) {
  
 std::string trim(const std::string &s) {
   return rtrim(ltrim(s));
+}
+
+std::vector<std::string> tokenize(std::string s, std::string del = ":")
+{
+    std::vector<std::string> list;
+    int start, end = -1*del.size();
+    do {
+        start = end + del.size();
+        end = s.find(del, start);
+        list.push_back(s.substr(start, end - start));
+    } while (end != -1);
+    return list;
 }

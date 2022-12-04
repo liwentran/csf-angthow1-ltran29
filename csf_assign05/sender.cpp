@@ -60,10 +60,8 @@ int main(int argc, char **argv) {
       conn.send(message);
       Message quit_response = Message();
       conn.receive(quit_response);
-      if (quit_response.tag == TAG_ERR) {
+      if (quit_response.tag == TAG_ERR || conn.get_last_result() == Connection::INVALID_MSG) {
         std::cerr << quit_response.data;
-        conn.close();
-        return 1;
       }
       break;
     }
@@ -74,10 +72,9 @@ int main(int argc, char **argv) {
       conn.send(message);
       Message message_response = Message();
       conn.receive(message_response);
-      if (message_response.tag == TAG_ERR) {
+      if (message_response.tag == TAG_ERR || conn.get_last_result() == Connection::INVALID_MSG) {
         std::cerr << message_response.data;
-        conn.close();
-        return 1;
+        continue;
       }
   }
   conn.close();

@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     if (server_msg.tag == TAG_DELIVERY) {
       std::vector<std::string> data_vector = tokenize(server_msg.data, ":");
 
-      std::cout << data_vector[1] << ":" << data_vector[2];
+      std::cout << data_vector[1] << ": " << data_vector[2];
     }
   }
 

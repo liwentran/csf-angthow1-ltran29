@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 
     Message message;
     std::string input;
-    std::getline(cin, input);
+    std::getline(std::cin, input);
 
     if(input.substr(0, 6) == "/join "){
       message.tag = TAG_JOIN;
@@ -71,8 +71,7 @@ int main(int argc, char **argv) {
       message.tag = TAG_SENDALL;
       message.data = input;
     }
-
-      conn.send(message)
+      conn.send(message);
       Message message_response = Message();
       conn.receive(message_response);
       if (message_response.tag == TAG_ERR) {
@@ -81,6 +80,6 @@ int main(int argc, char **argv) {
         return 1;
       }
   }
-  conn.close;
+  conn.close();
   return 0;
 }

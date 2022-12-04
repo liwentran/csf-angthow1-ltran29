@@ -53,17 +53,18 @@ int main(int argc, char **argv) {
     std::cerr << join_response.data;
     return 1;
   }
+  
 
   // loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
 
-  while (1) {
+  while(1) {
     Message server_msg = Message();
     conn.receive(server_msg);
     if (server_msg.tag == TAG_DELIVERY) {
       std::vector<std::string> data_vector = tokenize(server_msg.data, ":");
-      // TODO: check if the data is good?
-      std::cout << username << ":" << data_vector[2];
+
+      std::cout << data_vector[1] << ":" << data_vector[2];
     }
   }
 

@@ -94,9 +94,10 @@ bool Connection::receive(Message &msg) {
   }
 
   // get tag and data from buffer
-  char* ptr = strtok(buffer, ":"); // separate using ":"
+  char *ptr = strtok(buffer, ":"); // separate using ":"
+  char *save;
   msg.tag = ptr;
-  ptr = strtok(NULL, "");
+  ptr = strtok_r(NULL, "", &save);
   msg.data = ptr; 
 
   // return true if successful, false if not

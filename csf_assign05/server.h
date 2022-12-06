@@ -17,12 +17,19 @@ public:
 
   Room *find_or_create_room(const std::string &room_name);
 
+  void chat_with_sender(Connection *conn);
+  void chat_with_receiver(Connection *conn);
+
 private:
   // prohibit value semantics
   Server(const Server &);
   Server &operator=(const Server &);
 
   typedef std::map<std::string, Room *> RoomMap;
+
+
+  
+
 
   // These member variables are sufficient for implementing
   // the server operations
@@ -31,5 +38,7 @@ private:
   RoomMap m_rooms;
   pthread_mutex_t m_lock;
 };
+
+
 
 #endif // SERVER_H

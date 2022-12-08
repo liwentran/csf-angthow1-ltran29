@@ -51,7 +51,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       }
     } 
       if (message.tag == TAG_QUIT) { //quit the program
-        conn->send(Message(TAG_OK, "Goodbye!\n"));
+        conn->send(Message(TAG_OK, "Bye\n"));
         return;
       } else if (room == nullptr) {  //cannot send message without joining a room first
         if (message.tag == TAG_JOIN) {
@@ -127,6 +127,7 @@ void chat_with_receiver(Connection *conn, Server *server, User *user){
     }
   }
   room->remove_member(user);
+  return;
 }
 
 namespace {
@@ -225,12 +226,13 @@ void Server::handle_client_requests() {
   //       pthread for each connected client
 
     while(1){
-      int clientfd = Accept(m_ssock, NULL, NULL);
+      int clientfd = Accept(m_ssock, nullptr, nullptr);
       if (clientfd < 0) { 
         std::cerr << "Error accepting client connection";
+        return;
       } 
 
-      struct ConnectionInfo *info = NULL;
+      struct ConnectionInfo *info = nullptr;
       info = (ConnectionInfo *) malloc(sizeof(struct ConnectionInfo));
       info->conn = new Connection(clientfd);
       info->clientfd = clientfd;
@@ -241,6 +243,7 @@ void Server::handle_client_requests() {
       // starts a new prethread for this connected client
       if (pthread_create(&thr_id, NULL, worker, info) != 0) {
         std::cerr << "pthread_create failed";
+        return;
       }
       
     }

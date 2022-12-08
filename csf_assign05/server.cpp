@@ -54,7 +54,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
         return;
       }
       if (message.tag == TAG_QUIT) { //quit the program
-        conn->send(Message(TAG_OK, "Bye\n"));
+        conn->send(Message(TAG_OK, "Bye"));
         return;
       } else if (room == nullptr) {  //cannot send message without joining a room first
         if (message.tag == TAG_JOIN) {
@@ -62,11 +62,11 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
 
           room->add_member(user);
 
-          if (!conn->send(Message(TAG_OK, "joined room\n"))) {
+          if (!conn->send(Message(TAG_OK, "joined room"))) {
             return;
           }
         } else {
-          conn->send(Message(TAG_ERR, "Must join room to send a message!\n"));
+          conn->send(Message(TAG_ERR, "Must join room to send a message!"));
         }
       }
     // respond to /join [room]
@@ -76,12 +76,12 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       room = server->find_or_create_room(message.data);
       room->add_member(user);
       //need to register user to room
-      if (!conn->send(Message(TAG_OK, "joined new room\n"))) {
-            return;
-        }
+      if (!conn->send(Message(TAG_OK, "joined new room"))) {
+        return;
+      }
     } else if (message.tag == TAG_SENDALL){     // respond to [message text]
       room->broadcast_message(user->username, message.data);
-      if (!conn->send(Message(TAG_OK, "message sent to all in room\n"))) {
+      if (!conn->send(Message(TAG_OK, "message sent to all in room"))) {
           return;
       }
     }
@@ -115,7 +115,7 @@ void chat_with_receiver(Connection *conn, Server *server, User *user){
     if (message.tag == TAG_JOIN) {
           room = server->find_or_create_room(message.data);
           room->add_member(user);
-          if (!conn->send(Message(TAG_OK, "Joined room"))) {
+          if (!conn->send(Message(TAG_OK, "joined room"))) {
               return;
           }
   } else {

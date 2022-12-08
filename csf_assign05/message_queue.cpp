@@ -1,12 +1,15 @@
 #include <cassert>
 #include <ctime>
+#include <iostream>
 #include "message_queue.h"
 #include "guard.h"
+#include "message.h"
+
 
 MessageQueue::MessageQueue() {
   // initialize the mutex and the semaphore
+  pthread_mutex_init(&m_lock, nullptr);
 	sem_init(&m_avail, 0, 0);
-	pthread_mutex_init(&m_lock, NULL);
 }
 
 MessageQueue::~MessageQueue() {
@@ -18,13 +21,16 @@ MessageQueue::~MessageQueue() {
 void MessageQueue::enqueue(Message *msg) {
   Guard g(m_lock);
   // put the specified message on the queue
-  m_messages.push_back(msg);
+  Message *new_msg = new Message(msg->tag, msg->data);
+  m_messages.push_back(new_msg);
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
   sem_post(&m_avail);
 }
 
 Message *MessageQueue::dequeue() {
+  std::cout << "DEBUGGIN (MQ): entering dequeeue() " << std::endl;
+
   struct timespec ts;
 
   // get the current time using clock_gettime:
@@ -39,14 +45,19 @@ Message *MessageQueue::dequeue() {
   // call sem_timedwait to wait up to 1 second for a message
   //       to be available, return nullptr if no message is available
 
-    Message *msg = nullptr;
+  Message *msg = nullptr;
+  std::cout << "DEBUGGIN (MQ): stargin sem timewait" << std::endl;
+
   if (sem_timedwait(&m_avail, &ts) == -1) {
+    std::cout << "DEBUGGIN (MQ): not WORKING sem timedwait" << std::endl;
     return nullptr;
   }
-    Guard g(m_lock);
+  std::cout << "DEBUGGIN (MQ): before guard" << std::endl;
+
+  Guard g(m_lock);
   // remove the next message from the queue, return it
 
-
+  std::cout << "DEBUGGIN (MQ): seeing if q to be non-empty" << std::endl;
   // pop message from queue
   if (m_messages.empty()) {
     return msg;

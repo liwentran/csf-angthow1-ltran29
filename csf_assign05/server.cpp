@@ -26,6 +26,9 @@ struct ConnectionInfo {
     int clientfd;
     Connection* conn;
     Server* server;
+    ~ConnectionInfo() {
+      delete conn;
+    }
 };
 
 
@@ -35,6 +38,103 @@ struct ConnectionInfo {
 ////////////////////////////////////////////////////////////////////////
 
 namespace {
+
+  // communication loops for the senders
+void chat_with_sender(Connection *conn, Server *server, User *user){
+  Room *room = nullptr;
+  while (1) {
+    Message message;
+    // error message receieved
+    if (message.tag == TAG_ERR) {
+      std::cerr << message.data;
+      return;
+    }
+    if (!conn->receive(message)) {     //error checking
+      if (conn->get_last_result() == Connection::INVALID_MSG || conn->get_last_result() == Connection::EOF_OR_ERROR) {
+        conn->send(Message(TAG_ERR, "Invalid message\n"));
+        return;
+      }
+    } 
+      if (message.tag == TAG_QUIT) { //quit the program
+        conn->send(Message(TAG_OK, "Goodbye!\n"));
+        return;
+      } else if (room == nullptr) {  //cannot send message without joining a room first
+        if (message.tag == TAG_JOIN) {
+          room = server->find_or_create_room(message.data);
+          if (!conn->send(Message(TAG_OK, "joined room\n"))) {
+            return;
+          }
+        } else {
+          conn->send(Message(TAG_ERR, "Must join room to send a message!\n"));
+        }
+      }
+    // respond to /join [room]
+    else if (message.tag == TAG_JOIN) {
+      // TODO: register sender to room
+      room->remove_member(user);
+      room = server->find_or_create_room(message.data);
+      room->add_member(user);
+      //need to register user to room
+      if (!conn->send(Message(TAG_OK, "joined new room\n"))) {
+            return;
+        }
+    }
+    // respond to /leave
+    else if (message.tag == TAG_LEAVE) {
+      // TODO: de-register sender form room
+      room->remove_member(user);
+      room = nullptr;
+      if (!conn->send(Message(TAG_OK, "left room\n"))) {
+          return;
+      }    
+    // respond to [message text]
+    } else {
+      room->broadcast_message(user->username, message.data);
+      if (!conn->send(Message(TAG_OK, "message sent to all in room\n"))) {
+          return;
+      }
+    }
+  }
+  // For all synchronous messages, you must ensure that the server always transmits some kind of response
+  // tear down the client thread if any message fails to send
+}
+
+void chat_with_receiver(Connection *conn, Server *server, User *user){
+  //terminate the loop and tear down the client thread if any message transmission fails or if quit message
+
+      // respond to join room
+    Message message = Message();
+    Room *room = nullptr;
+    if (!conn->receive(message)) {
+      if (conn->get_last_result() == Connection::INVALID_MSG) {
+        conn->send(Message(TAG_ERR, "invalid message"));
+      }
+      return;
+    }
+    if (message.tag == TAG_JOIN) {
+          conn->receive(message);
+          room = server->find_or_create_room(message.data);
+          room->add_member(user);
+          if (!conn->send(Message(TAG_OK, "Joined room"))) {
+              return;
+          }
+  } else {
+      conn->send(Message(TAG_ERR, "invalid message, Sender needs to join a room\n"));
+  }
+
+  //send queued messages to receiver
+  while(1){ 
+    Message *msg = user->mqueue.dequeue();
+    if(msg != nullptr){
+      if (!conn->send(*msg)) {
+        break;
+      }
+    }
+  }
+  room->remove_member(user);
+}
+
+
 
 void *worker(void *arg) {
 
@@ -48,15 +148,27 @@ void *worker(void *arg) {
   // read login message (should be tagged either with
   //       TAG_SLOGIN or TAG_RLOGIN), send response
   Message login_message = Message();
-  info->conn->receive(login_message);
+
+  if (!info->conn->receive(login_message)) {
+    if (info->conn->get_last_result() == Connection::INVALID_MSG) {
+      info->conn->send(Message(TAG_ERR, "invalid message"));
+    }
+    return nullptr;
+  } 
+
+  if (login_message.tag != TAG_SLOGIN && login_message.tag != TAG_RLOGIN) {
+    info->conn->send(Message(TAG_ERR, "User needs to login first"));
+    return nullptr;
+  } else {
+    if (!info->conn->send(Message(TAG_OK, "logged in"))) {
+      return nullptr;
+    }
+  }
+
 
   // create user using its usernmae
-  User *user = &User(login_message.data);
+  User *user = new User(login_message.data);
 
-  // send confirmation
-  if (login_message.tag == TAG_SLOGIN || login_message.tag == TAG_RLOGIN) {
-    info->conn->send(Message(TAG_OK, "logged in"));
-  }
 
   // TODO: depending on whether the client logged in as a sender or
   //       receiver, communicate with the client (implementing
@@ -65,69 +177,23 @@ void *worker(void *arg) {
   
   // sender
   if (login_message.tag == TAG_SLOGIN) {
-    chat_with_sender(info->conn);
+    chat_with_sender(info->conn, info->server, user);
   // receiver
+        //need to register user to room
   } else if (login_message.tag == TAG_RLOGIN) {
-    // respond to join room
-    Message join_room_message = Message();
-    info->conn->receive(join_room_message);
-    Room *r = info->server->find_or_create_room(join_room_message.data);
-    r->add_member(user);
 
-    info->conn->send(Message(TAG_OK, "joined room"));
 
+    chat_with_receiver(info->conn, info->server, user);
     
-    chat_with_receiver(info->conn);
   }
   // tear down client thread 
-	close(info->clientfd);
-	free(info);
-	
-	return NULL;
+  delete user;
+  delete info;	
   return nullptr;
 }
-
-// communication loops for the senders
-void chat_with_sender(Connection *conn){
-
-  while (1) {
-    Message message;
-    conn->receive(message);
-
-    // error message receieved
-    if (message.tag == TAG_ERR) {
-      std::cerr << message.data;
-      return;
-    }
-    // respond to /join [room]
-    else if (message.tag == TAG_JOIN) {
-      // TODO: register sender to room
-      conn->send(Message(TAG_OK, "joined room"));
-    }
-    // respond to /leave
-    else if (message.tag == TAG_LEAVE) {
-      // TODO: de-register sender form room
-      
-      conn->send(Message(TAG_OK, "left room"));
-    
-    // respond to [message text]
-    } else {
-      
-    }
-  
-    
-  }
-  
-  // For all synchronous messages, you must ensure that the server always transmits some kind of response
-  // tear down the client thread if any message fails to send
 }
 
-void chat_with_receiver(Connection *conn){
-  //terminate the loop and tear down the client thread if any message transmission fails or if quit message
-  
-}
 
-}
 
 
 
@@ -138,11 +204,11 @@ void chat_with_receiver(Connection *conn){
 Server::Server(int port)
   : m_port(port)
   , m_ssock(-1) {
-  // TODO: initialize mutex
+  pthread_mutex_init(&m_lock, nullptr);
 }
 
 Server::~Server() {
-  // TODO: destroy mutex
+  pthread_mutex_destroy(&m_lock);
 }
 
 bool Server::listen() {
@@ -160,9 +226,7 @@ bool Server::listen() {
 void Server::handle_client_requests() {
   // TODO: infinite loop calling accept or Accept, starting a new
   //       pthread for each connected client
-  
 
-  if(listen()){
     while(1){
       int clientfd = Accept(m_ssock, NULL, NULL);
       if (clientfd < 0) { 
@@ -171,7 +235,7 @@ void Server::handle_client_requests() {
 
       struct ConnectionInfo *info = NULL;
       info = (ConnectionInfo *) malloc(sizeof(struct ConnectionInfo));
-      info->conn = &Connection(clientfd);
+      info->conn = new Connection(clientfd);
       info->clientfd = clientfd;
       info->server = this;
       
@@ -184,12 +248,23 @@ void Server::handle_client_requests() {
       
     }
 
-  }
+  
 
 }
 
 Room *Server::find_or_create_room(const std::string &room_name) {
   // TODO: return a pointer to the unique Room object representing
   //       the named chat room, creating a new one if necessary
+    Guard g(m_lock);
+  auto i = m_rooms.find(room_name);
+  if(i != m_rooms.end()){
+    return i->second;
+  }
+  else{ //create new room
+    Room r = Room(room_name);
+    m_rooms[room_name] = &r;
+    return &r;
+  }
+  
 }
 

@@ -1,11 +1,11 @@
 #include <cassert>
 #include <ctime>
 #include "message_queue.h"
+#include "guard.h"
 
 MessageQueue::MessageQueue() {
   // initialize the mutex and the semaphore
-  unsigned max_items = 25; // TODO: Find out how many max items
-	sem_init(&m_avail, 0, max_items);
+	sem_init(&m_avail, 0, 0);
 	pthread_mutex_init(&m_lock, NULL);
 }
 
@@ -16,12 +16,9 @@ MessageQueue::~MessageQueue() {
 }
 
 void MessageQueue::enqueue(Message *msg) {
-  // wait for empty slot
-  sem_wait(&m_avail);
+  Guard g(m_lock);
   // put the specified message on the queue
-  pthread_mutex_lock(&m_lock);
   m_messages.push_back(msg);
-  pthread_mutex_unlock(&m_lock);
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
   sem_post(&m_avail);
@@ -42,12 +39,13 @@ Message *MessageQueue::dequeue() {
   // call sem_timedwait to wait up to 1 second for a message
   //       to be available, return nullptr if no message is available
 
-  sem_timedwait(&m_avail, &ts);
-
+    Message *msg = nullptr;
+  if (sem_timedwait(&m_avail, &ts) == -1) {
+    return nullptr;
+  }
+    Guard g(m_lock);
   // remove the next message from the queue, return it
-  Message *msg = nullptr;
 
-  pthread_mutex_lock(&m_lock);
 
   // pop message from queue
   if (m_messages.empty()) {
@@ -56,8 +54,6 @@ Message *MessageQueue::dequeue() {
     msg = m_messages.front();
     m_messages.pop_front();
   }
-  pthread_mutex_unlock(&m_lock);
-  sem_post(&m_avail); /* empty slot is available */
 
   return msg;
 }

@@ -52,8 +52,6 @@ Message *MessageQueue::dequeue() {
 
   Guard g(m_lock);
   // remove the next message from the queue, return it
-
-  std::cout << "DEBUGGIN (MQ): seeing q to be non-empty" << std::endl;
   // pop message from queue
   if (m_messages.empty()) {
     return msg;

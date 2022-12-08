@@ -94,11 +94,13 @@ bool Connection::receive(Message &msg) {
   }
 
   // get tag and data from buffer
-  char *ptr = strtok(buffer, ":"); // separate using ":"
-  char *save;
-  msg.tag = ptr;
-  ptr = strtok_r(NULL, "", &save);
-  msg.data = ptr; 
+  std::stringstream ss(buffer);
+  std::string tag;
+  std::string data;
+
+  getline(ss, msg.tag, ':');
+  getline(ss, msg.data);
+
 
   // return true if successful, false if not
   m_last_result = SUCCESS;

@@ -36,10 +36,7 @@ struct ConnectionInfo {
 ////////////////////////////////////////////////////////////////////////
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
-
-namespace {
-
-  // communication loops for the senders
+// communication loops for the senders
 void chat_with_sender(Connection *conn, Server *server, User *user){
   Room *room = nullptr;
   while (1) {
@@ -134,7 +131,7 @@ void chat_with_receiver(Connection *conn, Server *server, User *user){
   room->remove_member(user);
 }
 
-
+namespace {
 
 void *worker(void *arg) {
 
@@ -192,6 +189,8 @@ void *worker(void *arg) {
   return nullptr;
 }
 }
+
+
 
 
 
@@ -261,9 +260,9 @@ Room *Server::find_or_create_room(const std::string &room_name) {
     return i->second;
   }
   else{ //create new room
-    Room r = Room(room_name);
-    m_rooms[room_name] = &r;
-    return &r;
+    Room *r = new Room(room_name);
+    m_rooms[room_name] = r;
+    return r;
   }
   
 }

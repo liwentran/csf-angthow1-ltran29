@@ -6,8 +6,6 @@
 #include <vector>
 #include <cctype>
 #include <cassert>
-#include "message.h"
-#include "connection.h"
 #include "user.h"
 #include "room.h"
 #include "guard.h"

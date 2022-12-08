@@ -69,13 +69,13 @@ int main(int argc, char **argv) {
       message.tag = TAG_SENDALL;
       message.data = input;
     }
-      conn.send(message);
-      Message message_response = Message();
-      conn.receive(message_response);
-      if (message_response.tag == TAG_ERR || conn.get_last_result() == Connection::INVALID_MSG) {
-        std::cerr << message_response.data;
-        continue;
-      }
+    conn.send(message);
+    Message message_response = Message();
+    conn.receive(message_response);
+    if (message_response.tag == TAG_ERR || conn.get_last_result() == Connection::INVALID_MSG) {
+      std::cerr << message_response.data;
+      continue;
+    }
   }
   conn.close();
   return 0;

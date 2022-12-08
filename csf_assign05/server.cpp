@@ -51,7 +51,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
         return;
       }
     } else{
-        std::cout << "DEBUGGIN: processing message with "<< message.tag << " : " <<message.data  <<std::endl;
+        std::cout << "DEBUGGIN: processing message with tag: "<< message.tag << ", and data:" <<message.data  <<std::endl;
 
       if (message.tag == TAG_ERR) {
         std::cerr << message.data;
@@ -135,10 +135,11 @@ void chat_with_receiver(Connection *conn, Server *server, User *user){
 
   //send queued messages to receiver
   while(1){ 
-    std::cout << "DEBUGGIN (R): waiting for qued messages " << std::endl;
+    // std::cout << "DEBUGGIN (R): waiting for qued messages " << std::endl;
     Message *msg = user->mqueue.dequeue();
-    std::cout << "DEBUGGIN (R): got message: " << msg->data << std::endl;
+    // std::cout << "DEBUGGIN (R): got message it could be null " << std::endl;
     if(msg != nullptr){
+      std::cout <<"DEBUGGIN (R): receieved a message from queue!" << std::endl;
       if (!conn->send(*msg)) {
         break;
       }

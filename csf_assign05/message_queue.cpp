@@ -29,7 +29,6 @@ void MessageQueue::enqueue(Message *msg) {
 }
 
 Message *MessageQueue::dequeue() {
-  std::cout << "DEBUGGIN (MQ): entering dequeeue() " << std::endl;
 
   struct timespec ts;
 
@@ -46,18 +45,15 @@ Message *MessageQueue::dequeue() {
   //       to be available, return nullptr if no message is available
 
   Message *msg = nullptr;
-  std::cout << "DEBUGGIN (MQ): stargin sem timewait" << std::endl;
 
   if (sem_timedwait(&m_avail, &ts) == -1) {
-    std::cout << "DEBUGGIN (MQ): not WORKING sem timedwait" << std::endl;
     return nullptr;
   }
-  std::cout << "DEBUGGIN (MQ): before guard" << std::endl;
 
   Guard g(m_lock);
   // remove the next message from the queue, return it
 
-  std::cout << "DEBUGGIN (MQ): seeing if q to be non-empty" << std::endl;
+  std::cout << "DEBUGGIN (MQ): seeing q to be non-empty" << std::endl;
   // pop message from queue
   if (m_messages.empty()) {
     return msg;

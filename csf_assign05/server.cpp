@@ -39,17 +39,17 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
   Room *room = nullptr;
   while (1) {
     Message message;
-    // error message receieved
-    if (message.tag == TAG_ERR) {
-      std::cerr << message.data;
-      return;
-    }
     if (!conn->receive(message)) {     //error checking
+        // error message receieved
       if (conn->get_last_result() == Connection::INVALID_MSG || conn->get_last_result() == Connection::EOF_OR_ERROR) {
         conn->send(Message(TAG_ERR, "Invalid message\n"));
         return;
       }
-    } 
+    } else{
+      if (message.tag == TAG_ERR) {
+        std::cerr << message.data;
+        return;
+      }
       if (message.tag == TAG_QUIT) { //quit the program
         conn->send(Message(TAG_OK, "Bye\n"));
         return;
@@ -88,6 +88,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       if (!conn->send(Message(TAG_OK, "message sent to all in room\n"))) {
           return;
       }
+    }
     }
   }
   // For all synchronous messages, you must ensure that the server always transmits some kind of response

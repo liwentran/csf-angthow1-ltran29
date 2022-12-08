@@ -73,6 +73,11 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       if (!conn->send(Message(TAG_OK, "joined new room\n"))) {
             return;
         }
+    } else if (message.tag == TAG_SENDALL){     // respond to [message text]
+      room->broadcast_message(user->username, message.data);
+      if (!conn->send(Message(TAG_OK, "message sent to all in room\n"))) {
+          return;
+      }
     }
     // respond to /leave
     else if (message.tag == TAG_LEAVE) {
@@ -82,13 +87,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       if (!conn->send(Message(TAG_OK, "left room\n"))) {
           return;
       }    
-    // respond to [message text]
-    } else {
-      room->broadcast_message(user->username, message.data);
-      if (!conn->send(Message(TAG_OK, "message sent to all in room\n"))) {
-          return;
-      }
-    }
+    } 
     }
   }
   // For all synchronous messages, you must ensure that the server always transmits some kind of response

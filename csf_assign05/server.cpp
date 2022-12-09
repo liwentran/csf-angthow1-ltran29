@@ -22,7 +22,6 @@
 struct ConnectionInfo {
     // Used to pass Connection object
     // along with any userful information
-    int clientfd;
     Connection* conn;
     Server* server;
     ~ConnectionInfo() {
@@ -59,9 +58,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
       } else if (room == nullptr) {  //cannot send message without joining a room first
         if (message.tag == TAG_JOIN) {
           room = server->find_or_create_room(message.data);
-
           room->add_member(user);
-
           if (!conn->send(Message(TAG_OK, "joined room"))) {
             return;
           }
@@ -98,6 +95,8 @@ void chat_with_sender(Connection *conn, Server *server, User *user){
   }
   // For all synchronous messages, you must ensure that the server always transmits some kind of response
   // tear down the client thread if any message fails to send
+    delete user;
+    delete conn;
 }
 
 void chat_with_receiver(Connection *conn, Server *server, User *user){
@@ -144,10 +143,9 @@ void *worker(void *arg) {
 
   pthread_detach(pthread_self());
 
-  // use a static cast to convert arg from a void* to
-  //       whatever pointer type describes the object(s) needed
-  //       to communicate with a client (sender or receiver)
-  struct ConnectionInfo *info = (ConnectionInfo *) arg;
+  struct ConnectionInfo *_info = (ConnectionInfo *) arg;
+
+  std::unique_ptr<ConnectionInfo> info(_info);
 
   // read login message (should be tagged either with
   //       TAG_SLOGIN or TAG_RLOGIN), send response
@@ -191,8 +189,8 @@ void *worker(void *arg) {
     
   }
   // tear down client thread 
-  delete user;
-  delete info;	
+  //delete user
+  //delete info;	
   return nullptr;
 }
 }
@@ -242,7 +240,6 @@ void Server::handle_client_requests() {
 
       struct ConnectionInfo *info = new ConnectionInfo();
       info->conn = new Connection(clientfd);
-      info->clientfd = clientfd;
       info->server = this;
       
       pthread_t thr_id;

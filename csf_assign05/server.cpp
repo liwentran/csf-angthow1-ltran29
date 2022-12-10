@@ -139,6 +139,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       }
     }
   }
+  delete user;
   delete conn;
 }
 
@@ -256,7 +257,6 @@ namespace
     {
       chat_with_receiver(info->conn, info->server, user);
     }
-    delete user;
     return nullptr;
   }
 }

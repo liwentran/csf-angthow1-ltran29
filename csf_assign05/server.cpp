@@ -78,7 +78,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       }
       // if user has not joined a room, the only command available is joining a room
       else if (room == nullptr)
-      { 
+      {
         if (message.tag == TAG_JOIN)
         {
           room = server->find_or_create_room(message.data);
@@ -96,11 +96,9 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       // respond to /join [room]
       else if (message.tag == TAG_JOIN)
       {
-        // register sender to room
         room->remove_member(user);
         room = server->find_or_create_room(message.data);
         room->add_member(user);
-        // need to register user to room
         if (!conn->send(Message(TAG_OK, "joined new room")))
         {
           return;
@@ -131,7 +129,9 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
         {
           conn->send(Message(TAG_ERR, "Not current in room"));
         }
-      } else {
+      }
+      else
+      {
         if (!conn->send(Message(TAG_ERR, "Tag is not valid")))
         {
           return;
@@ -139,9 +139,6 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       }
     }
   }
-  // For all synchronous messages, you must ensure that the server always transmits some kind of response
-  // tear down the client thread if any message fails to send
-  delete user;
   delete conn;
 }
 
@@ -220,7 +217,9 @@ namespace
       if (info->conn->get_last_result() == Connection::INVALID_MSG)
       {
         info->conn->send(Message(TAG_ERR, "invalid message"));
-      } else {
+      }
+      else
+      {
         info->conn->send(Message(TAG_ERR, "couldn't receive message"));
       }
       return nullptr;
@@ -243,7 +242,7 @@ namespace
     User *user = new User(login_message.data);
     std::string username = login_message.data;
 
-    // TODO: depending on whether the client logged in as a sender or
+    // depending on whether the client logged in as a sender or
     //       receiver, communicate with the client (implementing
     //       separate helper functions for each of these possibilities
     //       is a good idea)
@@ -252,16 +251,12 @@ namespace
     if (login_message.tag == TAG_SLOGIN)
     {
       chat_with_sender(info->conn, info->server, user);
-      // receiver
-      // need to register user to room
     }
     else if (login_message.tag == TAG_RLOGIN)
     {
       chat_with_receiver(info->conn, info->server, user);
     }
-    // tear down client thread
-    // delete user
-    // delete info;
+    delete user;
     return nullptr;
   }
 }
@@ -283,8 +278,8 @@ Server::~Server()
 
 bool Server::listen()
 {
-  // TODO: use open_listenfd to create the server socket, return true
-  //       if successful, false if not
+  // use open_listenfd to create the server socket, return true
+  //        if successful, false if not
   const char *port_string = std::to_string(m_port).c_str();
   m_ssock = open_listenfd(port_string);
   if (m_ssock < 0)
@@ -297,7 +292,7 @@ bool Server::listen()
 
 void Server::handle_client_requests()
 {
-  // TODO: infinite loop calling accept or Accept, starting a new
+  // infinite loop calling accept or Accept, starting a new
   //       pthread for each connected client
 
   while (1)
@@ -326,7 +321,7 @@ void Server::handle_client_requests()
 
 Room *Server::find_or_create_room(const std::string &room_name)
 {
-  // TODO: return a pointer to the unique Room object representing
+  // return a pointer to the unique Room object representing
   //       the named chat room, creating a new /one if necessary
   Guard g(m_lock);
   auto i = m_rooms.find(room_name);

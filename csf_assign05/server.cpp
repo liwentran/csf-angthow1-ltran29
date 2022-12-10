@@ -42,12 +42,14 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
   {
 
     Message message;
+
+    // try to receieve a message
     if (!conn->receive(message))
     {
-      // Error checking
+      // failed to recieve a message
       if (conn->get_last_result() == Connection::INVALID_MSG || conn->get_last_result() == Connection::EOF_OR_ERROR)
       {
-        conn->send(Message(TAG_ERR, "Invalid message\n"));
+        conn->send(Message(TAG_ERR, "Invalid message"));
         return;
       }
       else
@@ -57,21 +59,26 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
     }
     else
     {
+      // successfully receieved a message
       if (message.tag == TAG_ERR)
       {
         std::cerr << message.data;
         return;
       }
+
+      // message receieve error too long
       if (message.data.length() == Message::MAX_LEN)
         conn->send(Message(TAG_ERR, "Message length exceeds max length"));
 
+      // quit the program
       if (message.tag == TAG_QUIT)
-      { // quit the program
+      {
         conn->send(Message(TAG_OK, "Bye"));
         return;
       }
+      // if user has not joined a room, the only command available is joining a room
       else if (room == nullptr)
-      { // cannot send message without joining a room first
+      { 
         if (message.tag == TAG_JOIN)
         {
           room = server->find_or_create_room(message.data);
@@ -89,7 +96,7 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       // respond to /join [room]
       else if (message.tag == TAG_JOIN)
       {
-        // TODO: register sender to room
+        // register sender to room
         room->remove_member(user);
         room = server->find_or_create_room(message.data);
         room->add_member(user);
@@ -110,12 +117,12 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
       // respond to /leave
       else if (message.tag == TAG_LEAVE)
       {
-        // TODO: de-register sender form room
+        // de-register sender form room
         if (room != nullptr)
         {
           room->remove_member(user);
           room = nullptr;
-          if (!conn->send(Message(TAG_OK, "left room\n")))
+          if (!conn->send(Message(TAG_OK, "left room")))
           {
             return;
           }
@@ -123,6 +130,11 @@ void chat_with_sender(Connection *conn, Server *server, User *user)
         else
         {
           conn->send(Message(TAG_ERR, "Not current in room"));
+        }
+      } else {
+        if (!conn->send(Message(TAG_ERR, "Tag is not valid")))
+        {
+          return;
         }
       }
     }
@@ -163,7 +175,7 @@ void chat_with_receiver(Connection *conn, Server *server, User *user)
   }
   else
   {
-    conn->send(Message(TAG_ERR, "invalid message, Sender needs to join a room\n"));
+    conn->send(Message(TAG_ERR, "invalid message, Sender needs to join a room"));
   }
 
   // send queued messages to receiver
@@ -208,6 +220,8 @@ namespace
       if (info->conn->get_last_result() == Connection::INVALID_MSG)
       {
         info->conn->send(Message(TAG_ERR, "invalid message"));
+      } else {
+        info->conn->send(Message(TAG_ERR, "couldn't receive message"));
       }
       return nullptr;
     }
